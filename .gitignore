@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+*.log
+.idea/
+.vscode/
+.DS_Store
+postgres_data/
+redis_data/
+minio_data/
