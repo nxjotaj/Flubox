@@ -11,6 +11,9 @@ import {
   CreditCard,
   FileText,
   BarChart3,
+  Bell,
+  Images,
+  Layers,
 } from "lucide-react";
 import "./App.css";
 const API = "http://localhost:3000/api/v1";
@@ -79,7 +82,7 @@ export default function App() {
   );
 }
 function Login({ done }: any) {
-  const [e, setE] = useState("");
+  const [e, setE] = useState(""),[forgot,setForgot]=useState(false),[reset,setReset]=useState(false),[info,setInfo]=useState("");
   async function go(x: FormEvent<HTMLFormElement>) {
     x.preventDefault();
     const f = new FormData(x.currentTarget);
@@ -94,22 +97,24 @@ function Login({ done }: any) {
       setE(z.message);
     }
   }
+  async function recover(x:FormEvent<HTMLFormElement>){x.preventDefault();const email=String(new FormData(x.currentTarget).get('email'));const r=await api('/auth/forgot-password','',{method:'POST',body:JSON.stringify({email})});setInfo(r.developmentToken?`Token de desenvolvimento: ${r.developmentToken}`:'Se o e-mail existir, enviaremos as instruções.')}
+  async function resetPassword(x:FormEvent<HTMLFormElement>){x.preventDefault();const d=Object.fromEntries(new FormData(x.currentTarget));await api('/auth/reset-password','',{method:'POST',body:JSON.stringify(d)});setInfo('Senha redefinida. Volte ao login.');setReset(false);setForgot(false)}
   return (
     <main className="login">
-      <form onSubmit={go}>
+      <form onSubmit={reset?resetPassword:forgot?recover:go}>
         <Logo />
-        <h1>Gestão Dropshipping</h1>
+        <h1>{reset?'Redefinir senha':forgot?'Recuperar senha':'Gestão Dropshipping'}</h1>
         <p>Controle produtos, lojistas, pagamentos e expedições.</p>
-        <label>
+        {!reset&&<label>
           E-mail
           <input name="email" type="email" defaultValue="admin@flubox.local" />
-        </label>
-        <label>
+        </label>}
+        {!forgot&&!reset&&<label>
           Senha
           <input name="password" type="password" defaultValue="Admin@12345" />
-        </label>
+        </label>}{reset&&<><label>Token de recuperação<input name="token" required/></label><label>Nova senha<input name="password" type="password" minLength={10} required/></label></>}
         {e && <i>{e}</i>}
-        <button>Entrar no sistema</button>
+        {info&&<div className="msg">{info}</div>}<button>{reset?'Salvar nova senha':forgot?'Enviar recuperação':'Entrar no sistema'}</button><button type="button" className="link" onClick={()=>{setReset(false);setForgot(!forgot)}}>{forgot||reset?'Voltar ao login':'Esqueci minha senha'}</button>{forgot&&<button type="button" className="link" onClick={()=>{setForgot(false);setReset(true)}}>Já tenho o token</button>}
       </form>
     </main>
   );
@@ -127,6 +132,7 @@ function Logo() {
 }
 function System({ token, user, out }: any) {
   const [p, setP] = useState("dashboard");
+  const [notifications,setNotifications]=useState(false);
   const nav: any[] =
     user.role === "SELLER"
       ? [
@@ -165,9 +171,9 @@ function System({ token, user, out }: any) {
             <small>FLUBOX / {p.toUpperCase()}</small>
             <h2>{nav.find((x) => x[0] === p)?.[1]}</h2>
           </div>
-          <b>
+          <span className="header-actions"><button onClick={()=>setNotifications(true)} aria-label="Notificações"><Bell size={19}/></button><b>
             {user.name} · {user.role}
-          </b>
+          </b></span>
         </header>
         <main>
           {p === "dashboard" ? (
@@ -184,10 +190,12 @@ function System({ token, user, out }: any) {
             <Orders t={token} seller={user.role === "SELLER"} />
           )}
         </main>
+        {notifications&&<Notifications t={token} close={()=>setNotifications(false)}/>} 
       </section>
     </div>
   );
 }
+function Notifications({t,close}:any){const[xs,setXs]=useState<any[]>([]);useEffect(()=>{api('/notifications',t).then(setXs)},[t]);return <Modal title="Notificações" close={close}>{xs.length?xs.map(x=><div className="line" key={x.id}><span><b>{x.title}</b><small>{x.body}</small></span>{!x.readAt&&<button className="link" onClick={async()=>{await api('/notifications/'+x.id+'/read',t,{method:'PATCH'});setXs(xs.map(n=>n.id===x.id?{...n,readAt:new Date()}:n))}}>Marcar como lida</button>}</div>):<p>Nenhuma notificação.</p>}</Modal>}
 function Dashboard({ t, go }: any) {
   const [data, setData] = useState<any>({
     orders: [],
@@ -262,6 +270,7 @@ function Products({ t, admin }: any) {
   const [xs, setXs] = useState<any[]>([]),
     [modal, setModal] = useState<any>(null),
     [stock, setStock] = useState<any>(null),
+    [manage, setManage] = useState<any>(null),
     [msg, setMsg] = useState("");
   const load = () => api("/products", t).then(setXs);
   useEffect(() => {
@@ -307,10 +316,11 @@ function Products({ t, admin }: any) {
     }
   }
   async function download(format: string) {
-    const r = await fetch(`${API}/exports/catalog.${format}`, { headers: { Authorization: `Bearer ${localStorage.token}` } });
+    const r = await fetch(`${API}/exports/${format==='zip'?'catalog-images.zip':'catalog.'+format}`, { headers: { Authorization: `Bearer ${localStorage.token}` } });
     const blob = await r.blob(), link = document.createElement('a');
-    link.href = URL.createObjectURL(blob); link.download = `catalogo-flubox.${format}`; link.click(); URL.revokeObjectURL(link.href);
+    link.href = URL.createObjectURL(blob); link.download = format==='zip'?'fotos-catalogo-flubox.zip':`catalogo-flubox.${format}`; link.click(); URL.revokeObjectURL(link.href);
   }
+  async function manageProduct(id:string){setManage(await api('/products/'+id,t))}
   return (
     <>
       <div className="tools">
@@ -320,7 +330,7 @@ function Products({ t, admin }: any) {
             api("/products?search=" + e.target.value, t).then(setXs)
           }
         />
-        <span className="tool-actions"><button onClick={() => download('csv')}>Exportar CSV</button><button onClick={() => download('xlsx')}>Exportar Excel</button>{admin && (
+        <span className="tool-actions"><button onClick={() => download('csv')}>Exportar CSV</button><button onClick={() => download('xlsx')}>Exportar Excel</button><button onClick={() => download('zip')}>Fotos ZIP</button>{admin && (
           <button onClick={() => setModal({})}>
             <Plus size={17} />
             Novo produto
@@ -352,6 +362,7 @@ function Products({ t, admin }: any) {
                   <button className="link" onClick={() => setStock(x)}>
                     Estoque
                   </button>
+                  <button className="link" onClick={() => manageProduct(x.id)}>Imagens e variações</button>
                 </>
               )}
             </td>
@@ -417,9 +428,11 @@ function Products({ t, admin }: any) {
           </form>
         </Modal>
       )}
+      {manage&&<ProductAssets product={manage} t={t} reload={()=>manageProduct(manage.id)} close={()=>setManage(null)}/>} 
     </>
   );
 }
+function ProductAssets({product,t,reload,close}:any){async function image(file:File){const f=new FormData();f.append('file',file);await api(`/products/${product.id}/images`,t,{method:'POST',body:f});reload()}async function variant(e:FormEvent<HTMLFormElement>){e.preventDefault();const d:any=Object.fromEntries(new FormData(e.currentTarget));d.stockOnHand=Number(d.stockOnHand);if(d.price)d.price=Number(d.price);d.attributes={description:d.attributes};await api(`/products/${product.id}/variants`,t,{method:'POST',body:JSON.stringify(d)});(e.target as HTMLFormElement).reset();reload()}return <Modal title={`Imagens e variações — ${product.sku}`} close={close}><h4>Imagens do produto</h4><label className="upload"><Images size={18}/>Adicionar foto<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>e.target.files?.[0]&&image(e.target.files[0])}/></label><div className="asset-list">{product.files.filter((f:any)=>f.kind==='PRODUCT_IMAGE').map((f:any)=><div className="line" key={f.id}><span>{f.primary?'★ Principal · ':''}{f.filename}</span><span><button className="link" onClick={async()=>{await api(`/products/${product.id}/images/${f.id}/primary`,t,{method:'PATCH'});reload()}}>Tornar principal</button><button className="link" onClick={async()=>{if(confirm('Excluir esta imagem?')){await api(`/products/${product.id}/images/${f.id}`,t,{method:'DELETE'});reload()}}}>Excluir</button></span></div>)}</div><h4><Layers size={17}/> Variações</h4>{product.variants.map((v:any)=><div className="line" key={v.id}><span><b>{v.sku}</b> — {v.name}</span><span>{v.stockOnHand} un. · {v.price?money(v.price):'Preço do produto'}</span></div>)}<form className="grid compact" onSubmit={variant}><label>SKU da variação<input name="sku" required/></label><label>Nome<input name="name" required/></label><label>Preço opcional<input name="price" type="number" step="0.01"/></label><label>Estoque<input name="stockOnHand" type="number" min="0" required/></label><label className="wide">Atributos (cor, tamanho etc.)<input name="attributes"/></label><button className="wide">Adicionar variação</button></form></Modal>}
 function Sellers({ t }: any) {
   const [xs, setXs] = useState<any[]>([]),
     [detail, setDetail] = useState<any>();

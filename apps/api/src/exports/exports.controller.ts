@@ -2,9 +2,22 @@ import { Controller, Get, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import ExcelJS from 'exceljs';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import * as archiverModule from 'archiver';
 @Controller('exports')
 export class ExportsController {
-  constructor(private db: PrismaService) {}
+  private storage: SupabaseClient;
+  constructor(
+    private db: PrismaService,
+    config: ConfigService,
+  ) {
+    this.storage = createClient(
+      config.getOrThrow('SUPABASE_URL'),
+      config.getOrThrow('SUPABASE_SECRET_KEY'),
+      { auth: { persistSession: false } },
+    );
+  }
   private async rows(search?: string) {
     return this.db.product.findMany({
       where: {
@@ -83,7 +96,7 @@ export class ExportsController {
     const xs = await this.rows(s),
       w = new ExcelJS.Workbook(),
       sh = w.addWorksheet('Catálogo');
-    sh.columns = ([
+    sh.columns = [
       ['sku', 'SKU', 18],
       ['name', 'Nome', 35],
       ['description', 'Descrição', 50],
@@ -98,7 +111,7 @@ export class ExportsController {
       ['heightMm', 'Altura (mm)', 15],
       ['gtin', 'GTIN', 18],
       ['ncm', 'NCM', 14],
-    ].map(([key, header, width]) => ({ key, header, width })) as any);
+    ].map(([key, header, width]) => ({ key, header, width })) as any;
     xs.forEach((x) => sh.addRow(x));
     sh.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
     sh.getRow(1).fill = {
@@ -131,7 +144,7 @@ export class ExportsController {
       }),
       w = new ExcelJS.Workbook(),
       sh = w.addWorksheet('Pedidos');
-    sh.columns = ([
+    sh.columns = [
       ['number', 'Pedido', 24],
       ['createdAt', 'Data', 22],
       ['seller', 'Lojista', 30],
@@ -139,7 +152,7 @@ export class ExportsController {
       ['payment', 'Pagamento', 18],
       ['items', 'Itens', 10],
       ['total', 'Total', 15],
-    ].map(([key, header, width]) => ({ key, header, width })) as any);
+    ].map(([key, header, width]) => ({ key, header, width })) as any;
     xs.forEach((x) =>
       sh.addRow({
         number: x.number,
@@ -158,5 +171,28 @@ export class ExportsController {
     });
     await w.xlsx.write(res);
     res.end();
+  }
+  @Get('catalog-images.zip') async images(
+    @Res() res: Response,
+    @Query('search') search?: string,
+  ) {
+    const products = await this.rows(search),
+      zip = new (archiverModule as any).ZipArchive({ zlib: { level: 6 } });
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': 'attachment; filename="fotos-catalogo-flubox.zip"',
+    });
+    zip.pipe(res);
+    for (const p of products)
+      for (const f of p.files) {
+        const x = await this.storage.storage
+          .from('flubox-private')
+          .download(f.storageKey);
+        if (x.data)
+          zip.append(Buffer.from(await x.data.arrayBuffer()), {
+            name: `${p.sku}/${f.filename}`,
+          });
+      }
+    await zip.finalize();
   }
 }

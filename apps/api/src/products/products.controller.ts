@@ -17,6 +17,7 @@ import {
   CreateProductDto,
   StockAdjustmentDto,
   UpdateProductDto,
+  VariantDto,
 } from './products.dto';
 import { ProductsService } from './products.service';
 @ApiTags('Produtos')
@@ -59,4 +60,7 @@ export class ProductsController {
   ) {
     return this.service.archive(id, req.user.id);
   }
+  @Roles(Role.ADMIN, Role.OPERATOR) @Post(':id/variants') createVariant(@Param('id') id:string,@Body() dto:VariantDto,@Req() req:{user:{id:string}}){return this.service.createVariant(id,dto,req.user.id)}
+  @Roles(Role.ADMIN, Role.OPERATOR) @Put(':id/variants/:variantId') updateVariant(@Param('id') id:string,@Param('variantId') variantId:string,@Body() dto:VariantDto,@Req() req:{user:{id:string}}){return this.service.updateVariant(id,variantId,dto,req.user.id)}
+  @Roles(Role.ADMIN) @Delete(':id/variants/:variantId') deleteVariant(@Param('id') id:string,@Param('variantId') variantId:string,@Req() req:{user:{id:string}}){return this.service.deleteVariant(id,variantId,req.user.id)}
 }

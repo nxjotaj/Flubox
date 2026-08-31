@@ -8,6 +8,7 @@ import {
   CreateProductDto,
   StockAdjustmentDto,
   UpdateProductDto,
+  VariantDto,
 } from './products.dto';
 @Injectable()
 export class ProductsService {
@@ -186,4 +187,7 @@ export class ProductsService {
       }),
     ]);
   }
+  async createVariant(productId:string,dto:VariantDto,actorId:string){await this.find(productId);const v=await this.prisma.productVariant.create({data:{productId,sku:dto.sku,name:dto.name,price:dto.price,stockOnHand:dto.stockOnHand,attributes:dto.attributes||{}}});await this.prisma.auditLog.create({data:{actorId,entityType:'variant',entityId:v.id,action:'create',after:dto as any}});return v}
+  async updateVariant(productId:string,id:string,dto:VariantDto,actorId:string){const v=await this.prisma.productVariant.update({where:{id,productId},data:{sku:dto.sku,name:dto.name,price:dto.price,stockOnHand:dto.stockOnHand,attributes:dto.attributes||{}}});await this.prisma.auditLog.create({data:{actorId,entityType:'variant',entityId:id,action:'update',after:dto as any}});return v}
+  async deleteVariant(productId:string,id:string,actorId:string){const v=await this.prisma.productVariant.update({where:{id,productId},data:{active:false}});await this.prisma.auditLog.create({data:{actorId,entityType:'variant',entityId:id,action:'deactivate'}});return v}
 }
