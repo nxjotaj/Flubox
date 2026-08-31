@@ -126,6 +126,16 @@ model Session {
   @@index([userId, expiresAt])
 }
 
+model PasswordReset {
+  id String @id @default(uuid())
+  userId String
+  tokenHash String @unique
+  expiresAt DateTime
+  usedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId, expiresAt])
+}
+
 model Product {
   id String @id @default(uuid())
   sku String @unique

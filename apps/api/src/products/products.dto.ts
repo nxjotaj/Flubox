@@ -35,3 +35,4 @@ export class StockAdjustmentDto {
   @IsString() @IsNotEmpty() reason!: string;
   @IsOptional() @IsString() reference?: string;
 }
+export class VariantDto { @IsString() @IsNotEmpty() sku!:string; @IsString() @IsNotEmpty() name!:string; @IsOptional() @Type(()=>Number) @IsNumber() @Min(0) price?:number; @IsOptional() attributes?:Record<string,string>; @Type(()=>Number) @IsInt() @Min(0) stockOnHand!:number; }
