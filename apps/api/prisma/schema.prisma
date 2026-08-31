@@ -1,15 +1,88 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum Role { ADMIN SELLER OPERATOR }
-enum UserStatus { PENDING_EMAIL PENDING_APPROVAL APPROVED REJECTED SUSPENDED DELETED }
-enum ProductStatus { DRAFT ACTIVE INACTIVE ARCHIVED }
-enum OrderStatus { DRAFT AWAITING_PAYMENT PAYMENT_REVIEW DOCUMENTS_PENDING PAID SEPARATING READY_TO_SHIP SHIPPED CANCELLED REFUND_PENDING REFUNDED }
-enum PaymentStatus { PENDING CONFIRMED EXPIRED REVIEW REJECTED REFUND_PENDING REFUNDED }
-enum ReservationStatus { ACTIVE RELEASED CONSUMED }
-enum FileKind { PRODUCT_IMAGE PRODUCT_ATTACHMENT PAYMENT_RECEIPT SHIPPING_LABEL INVOICE CONTENT_DECLARATION EXPORT }
-enum StockMovementType { ENTRY RESERVATION RELEASE ADJUSTMENT SHIPMENT RETURN LOSS }
-enum NotificationChannel { IN_APP EMAIL }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  OPERATOR
+}
+
+enum UserStatus {
+  PENDING_EMAIL
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SUSPENDED
+  DELETED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  DRAFT
+  AWAITING_PAYMENT
+  PAYMENT_REVIEW
+  DOCUMENTS_PENDING
+  PAID
+  SEPARATING
+  READY_TO_SHIP
+  SHIPPED
+  CANCELLED
+  REFUND_PENDING
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+  REVIEW
+  REJECTED
+  REFUND_PENDING
+  REFUNDED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  RELEASED
+  CONSUMED
+}
+
+enum FileKind {
+  PRODUCT_IMAGE
+  PRODUCT_ATTACHMENT
+  PAYMENT_RECEIPT
+  SHIPPING_LABEL
+  INVOICE
+  CONTENT_DECLARATION
+  EXPORT
+}
+
+enum StockMovementType {
+  ENTRY
+  RESERVATION
+  RELEASE
+  ADJUSTMENT
+  SHIPMENT
+  RETURN
+  LOSS
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
 
 model User {
   id String @id @default(uuid())
