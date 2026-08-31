@@ -354,3 +354,21 @@ model WebhookEvent {
   createdAt DateTime @default(now())
   @@unique([provider, externalId])
 }
+
+model PlatformSettings {
+  id String @id @default("default")
+  companyName String @default("")
+  taxId String @default("")
+  phone String @default("")
+  email String @default("")
+  pickupAddress Json @default("{}")
+  pixMode String @default("MANUAL")
+  pixKey String @default("")
+  pixBeneficiary String @default("")
+  pixCity String @default("")
+  pixProvider String @default("SIMULATED")
+  pixApiUrl String @default("")
+  pixApiTokenEncrypted String @default("")
+  updatedById String?
+  updatedAt DateTime @updatedAt
+}

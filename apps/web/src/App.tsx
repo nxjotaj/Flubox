@@ -7,14 +7,18 @@ import {
   ShoppingCart,
   LogOut,
   Plus,
+  Settings,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 import "./App.css";
 const API = "http://localhost:3000/api/v1";
 async function api(p: string, t = "", o: RequestInit = {}) {
+  const multipart = o.body instanceof FormData;
   const r = await fetch(API + p, {
       ...o,
       headers: {
-        "Content-Type": "application/json",
+        ...(!multipart ? { "Content-Type": "application/json" } : {}),
         ...(t ? { Authorization: `Bearer ${t}` } : {}),
       },
     }),
@@ -111,6 +115,7 @@ function System({ token, user, out }: any) {
           ["products", "Produtos e estoque", Package],
           ["sellers", "Lojistas", Users],
           ["orders", "Pedidos e pagamentos", ShoppingCart],
+          ["settings", "Empresa e Pix", Settings],
         ];
   return (
     <div className="app">
@@ -141,11 +146,13 @@ function System({ token, user, out }: any) {
         </header>
         <main>
           {p === "dashboard" ? (
-            <Dashboard t={token} />
+            <Dashboard t={token} go={setP} />
           ) : p === "products" ? (
             <Products t={token} admin={user.role !== "SELLER"} />
           ) : p === "sellers" ? (
             <Sellers t={token} />
+          ) : p === "settings" ? (
+            <PlatformSettings t={token} />
           ) : (
             <Orders t={token} />
           )}
@@ -154,38 +161,30 @@ function System({ token, user, out }: any) {
     </div>
   );
 }
-function Dashboard({ t }: any) {
-  const [p, setP] = useState<any[]>([]),
-    [o, setO] = useState<any[]>([]);
+function Dashboard({ t, go }: any) {
+  const [data, setData] = useState<any>({orders:[],payments:[],lowStock:[],recent:[]});
   useEffect(() => {
-    api("/products", t).then(setP);
-    api("/orders", t).then(setO);
+    api("/dashboard", t).then(setData);
   }, [t]);
   return (
     <>
       <div className="cards">
         {[
-          ["Produtos", p.length],
-          [
-            "Estoque disponível",
-            p.reduce((a, x) => a + x.stockOnHand - x.reservedStock, 0),
-          ],
-          [
-            "Pedidos abertos",
-            o.filter((x) => !["SHIPPED", "CANCELLED"].includes(x.status))
-              .length,
-          ],
-          ["Em revisão", o.filter((x) => x.status === "PAYMENT_REVIEW").length],
+          ["Produtos ativos", data.products||0, "products"],
+          ["Cadastros aguardando", data.pendingSellers||0, "sellers"],
+          ["Pedidos abertos", (data.orders||[]).filter((x:any)=>!["SHIPPED","CANCELLED"].includes(x.status)).reduce((a:number,x:any)=>a+x._count,0), "orders"],
+          ["Pagamentos em revisão", (data.payments||[]).find((x:any)=>x.status==="REVIEW")?._count||0, "orders"],
         ].map((x) => (
-          <article>
+          <article onClick={()=>go(x[2])} className="clickable">
             <small>{x[0]}</small>
             <strong>{x[1]}</strong>
           </article>
         ))}
       </div>
       <div className="panel">
-        <h3>Operação conectada</h3>
-        <p>Dados carregados da API e persistidos no PostgreSQL Supabase.</p>
+        <h3>Atalhos operacionais</h3>
+        <div className="quick"><button onClick={()=>go('orders')}><ShoppingCart/>Receber e processar pedidos</button><button onClick={()=>go('products')}><Package/>Produtos e estoque</button><button onClick={()=>go('sellers')}><Users/>Aprovar lojistas</button><button onClick={()=>go('settings')}><CreditCard/>Configurar empresa e Pix</button></div>
+        <h3>Estoque baixo</h3><div className="mini-list">{(data.lowStock||[]).map((x:any)=><span><b>{x.sku}</b> {x.name}<strong>{x.stockOnHand-x.reservedStock} un.</strong></span>)}{!data.lowStock?.length&&<p>Nenhum alerta de estoque.</p>}</div>
       </div>
     </>
   );
@@ -212,7 +211,7 @@ function Products({ t, admin }: any) {
     });
     try {
       await api(modal.id ? `/products/${modal.id}` : "/products", t, {
-        method: modal.id ? "PATCH" : "POST",
+        method: modal.id ? "PUT" : "POST",
         body: JSON.stringify(d),
       });
       setModal(null);
@@ -404,11 +403,17 @@ function Sellers({ t }: any) {
   );
 }
 function Orders({ t }: any) {
-  const [xs, setXs] = useState<any[]>([]);
+  const [xs, setXs] = useState<any[]>([]),[detail,setDetail]=useState<any>(null),[filter,setFilter]=useState('');
+  const load=()=>api('/orders'+(filter?'?status='+filter:''),t).then(setXs);
   useEffect(() => {
-    api("/orders", t).then(setXs);
-  }, [t]);
+    void load();
+  }, [t,filter]);
+  async function open(id:string){setDetail(await api('/orders/'+id,t))}
+  async function upload(kind:string,file:File){const f=new FormData();f.append('file',file);await api(`/orders/${detail.id}/files/${kind}`,t,{method:'POST',body:f});await open(detail.id);load()}
+  async function review(payment:any,status:string){const reason=prompt('Motivo obrigatório da decisão:');if(!reason)return;await api(`/orders/payments/${payment.id}/review`,t,{method:'PATCH',body:JSON.stringify({status,reason})});await open(detail.id);load()}
+  async function ship(){const trackingCode=prompt('Código de rastreio (opcional):')||'';await api(`/orders/${detail.id}/ship`,t,{method:'PATCH',body:JSON.stringify({trackingCode,notes:'Expedição registrada pelo painel'})});setDetail(null);load()}
   return (
+    <><div className="tools"><select value={filter} onChange={e=>setFilter(e.target.value)}><option value="">Todos os pedidos</option>{['AWAITING_PAYMENT','PAYMENT_REVIEW','DOCUMENTS_PENDING','PAID','SEPARATING','READY_TO_SHIP','SHIPPED','CANCELLED'].map(x=><option>{x}</option>)}</select><button onClick={load}>Atualizar pedidos</button></div>
     <Table
       heads={[
         "Pedido",
@@ -434,16 +439,18 @@ function Orders({ t }: any) {
           <td>
             <button
               className="link"
-              onClick={() => alert(JSON.stringify(x, null, 2))}
+              onClick={() => open(x.id)}
             >
               Abrir
             </button>
           </td>
         </tr>
       ))}
-    </Table>
+    </Table>{detail&&<Modal title={'Pedido '+detail.number} close={()=>setDetail(null)}><div className="order-summary"><div><small>Lojista</small><b>{detail.seller.companyName||detail.seller.name}</b><span>{detail.seller.email}</span></div><div><small>Destinatário</small><b>{detail.recipientName}</b><span>{JSON.stringify(detail.recipientAddress)}</span></div><div><small>Total</small><b>{money(detail.total)}</b><span>{detail.status}</span></div></div><h4>Itens</h4>{detail.items.map((i:any)=><div className="line"><span>{i.quantity}× {i.name} <small>{i.sku}</small></span><b>{money(Number(i.unitPrice)*i.quantity)}</b></div>)}<h4>Pagamento</h4>{detail.payments.map((p:any)=><div className="payment"><span><b>{p.provider}</b> · {p.status} · {money(p.amount)}</span><code>{p.providerChargeId}</code>{p.status!=='CONFIRMED'&&<span><button className="link" onClick={()=>review(p,'CONFIRMED')}>Aprovar manualmente</button><button className="link" onClick={()=>review(p,'REJECTED')}>Rejeitar</button></span>}</div>)}<h4>Etiqueta e documentos</h4><div className="uploads"><Upload label="Comprovante" kind="PAYMENT_RECEIPT" onFile={upload}/><Upload label="Etiqueta" kind="SHIPPING_LABEL" onFile={upload}/><Upload label="Nota fiscal" kind="INVOICE" onFile={upload}/><Upload label="Declaração" kind="CONTENT_DECLARATION" onFile={upload}/></div>{detail.files.map((f:any)=><button className="file" onClick={async()=>{const x=await api('/files/'+f.id+'/url',t);window.open(x.url,'_blank')}}><FileText size={16}/>{f.kind}: {f.filename}</button>)}<div className="actions"><button onClick={ship}>Registrar expedição</button></div></Modal>}</>
   );
 }
+function Upload({label,kind,onFile}:any){return <label className="upload">{label}<input type="file" accept=".pdf,image/png,image/jpeg,image/webp" onChange={e=>e.target.files?.[0]&&onFile(kind,e.target.files[0])}/></label>}
+function PlatformSettings({t}:any){const[x,setX]=useState<any>(null),[msg,setMsg]=useState('');useEffect(()=>{api('/settings',t).then(setX)},[t]);if(!x)return <p>Carregando configurações…</p>;async function save(e:FormEvent<HTMLFormElement>){e.preventDefault();const d:any=Object.fromEntries(new FormData(e.currentTarget));d.pickupAddress={postalCode:d.postalCode,street:d.street,number:d.number,complement:d.complement,neighborhood:d.neighborhood,city:d.city,state:d.state};['postalCode','street','number','complement','neighborhood','city','state'].forEach(k=>delete d[k]);try{setX(await api('/settings',t,{method:'PUT',body:JSON.stringify(d)}));setMsg('Configurações salvas e registradas na auditoria.')}catch(z:any){setMsg(z.message)}}const a=x.pickupAddress||{};return <div className="panel settings"><h3>Dados da empresa e endereço de coleta</h3><p>Este endereço deve ser informado pelos lojistas como origem/coleta nas plataformas de venda.</p>{msg&&<div className="msg">{msg}</div>}<form className="grid" onSubmit={save}>{[['companyName','Razão social / nome'],['taxId','CNPJ / CPF'],['email','E-mail operacional'],['phone','Telefone'],['postalCode','CEP'],['street','Rua'],['number','Número'],['complement','Complemento'],['neighborhood','Bairro'],['city','Cidade'],['state','UF']].map(([n,l])=><label>{l}<input name={n} defaultValue={x[n]??a[n]??''} required={!['complement'].includes(n)}/></label>)}<h3 className="wide">Recebimento Pix</h3><label>Modo<select name="pixMode" defaultValue={x.pixMode}><option value="MANUAL">Conta/chave manual</option><option value="API">Provedor com API</option><option value="SIMULATED">Simulador de testes</option></select></label><label>Provedor<input name="pixProvider" defaultValue={x.pixProvider}/></label><label>Chave Pix<input name="pixKey" defaultValue={x.pixKey}/></label><label>Beneficiário<input name="pixBeneficiary" defaultValue={x.pixBeneficiary}/></label><label>Cidade Pix<input name="pixCity" defaultValue={x.pixCity}/></label><label>URL da API<input name="pixApiUrl" defaultValue={x.pixApiUrl}/></label><label className="wide">Token secreto da API<input name="pixApiToken" type="password" placeholder={x.pixApiTokenEncrypted?'Token já configurado — deixe vazio para manter':'Informe o token'}/></label><button className="wide">Salvar empresa e Pix</button></form></div>}
 function Table({ heads, children }: any) {
   return (
     <div className="table">
