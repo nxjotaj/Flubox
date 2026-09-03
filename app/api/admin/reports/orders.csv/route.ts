@@ -3,7 +3,12 @@ import { getD1 } from '@/db';
 import { requireAccountPermission } from '@/modules/identity/service';
 
 const cell = (value: unknown) => {
-  const rendered=value==null?'':['string','number','boolean','bigint'].includes(typeof value)?`${value as string|number|boolean|bigint}`:JSON.stringify(value);
+  const rendered =
+    value == null
+      ? ''
+      : ['string', 'number', 'boolean', 'bigint'].includes(typeof value)
+        ? `${value as string | number | boolean | bigint}`
+        : JSON.stringify(value);
   return `"${rendered.replaceAll('"', '""')}"`;
 };
 export async function GET() {

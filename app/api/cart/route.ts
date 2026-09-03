@@ -32,11 +32,20 @@ export async function POST(request: Request) {
     .prepare(
       `SELECT p.id,p.organization_id supplierId FROM products p JOIN organizations o ON o.id=p.organization_id AND o.status='active' JOIN subscriptions s ON s.organization_id=o.id AND s.status IN ('active','grace_period') JOIN product_favorites f ON f.product_id=p.id AND f.organization_id=? LEFT JOIN product_variants v ON v.id=? AND v.product_id=p.id AND v.status='active' WHERE p.id=? AND p.status='approved' AND ((? IS NOT NULL AND v.id IS NOT NULL) OR (? IS NULL AND NOT EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id=p.id AND pv.status='active')))`,
     )
-    .bind(account.organization.id,parsed.data.variantId??null,parsed.data.productId,parsed.data.variantId??null,parsed.data.variantId??null)
+    .bind(
+      account.organization.id,
+      parsed.data.variantId ?? null,
+      parsed.data.productId,
+      parsed.data.variantId ?? null,
+      parsed.data.variantId ?? null,
+    )
     .first<{ id: string; supplierId: string }>();
   if (!product)
     return Response.json(
-      { error: 'Vincule o produto e escolha uma variação disponível.', requestId },
+      {
+        error: 'Vincule o produto e escolha uma variação disponível.',
+        requestId,
+      },
       { status: 404 },
     );
   const existingSupplier = await getD1()
@@ -70,7 +79,7 @@ export async function POST(request: Request) {
       .bind(
         account.organization.id,
         parsed.data.productId,
-        parsed.data.variantId??null,
+        parsed.data.variantId ?? null,
         parsed.data.quantity,
         now,
         now,

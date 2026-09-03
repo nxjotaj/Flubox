@@ -29,11 +29,7 @@ export const ROLE_PERMISSION_MAP = {
     'payments.view',
     'audit.view',
   ],
-  supplier_member: [
-    'organization.view',
-    'products.view',
-    'orders.view',
-  ],
+  supplier_member: ['organization.view', 'products.view', 'orders.view'],
   supplier_operator_1: [
     'organization.view',
     'orders.view',

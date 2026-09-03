@@ -28,16 +28,21 @@ const schema = z.object({
   priceCents: z.int().positive(),
   suggestedRetailCents: z.int().positive().optional(),
   preparationDays: z.int().min(1).max(30),
-  variants: z.array(z.object({
-    id: z.string().optional(),
-    name: z.string().trim().min(1).max(100),
-    sku: z.string().trim().min(1).max(64),
-    gtin: z.string().trim().max(14).optional(),
-    attributes: z.record(z.string(),z.string().max(100)).default({}),
-    priceCents: z.int().positive(),
-    suggestedRetailCents: z.int().positive().optional(),
-    stock: z.int().nonnegative(),
-  })).min(1).max(100),
+  variants: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().trim().min(1).max(100),
+        sku: z.string().trim().min(1).max(64),
+        gtin: z.string().trim().max(14).optional(),
+        attributes: z.record(z.string(), z.string().max(100)).default({}),
+        priceCents: z.int().positive(),
+        suggestedRetailCents: z.int().positive().optional(),
+        stock: z.int().nonnegative(),
+      }),
+    )
+    .min(1)
+    .max(100),
 });
 export async function PATCH(
   request: Request,
@@ -88,7 +93,10 @@ export async function PATCH(
       ...parsed.data,
       sku: current.sku,
       categoryId: current.categoryId ?? undefined,
-      stock: parsed.data.variants.reduce((sum,variant)=>sum+variant.stock,0),
+      stock: parsed.data.variants.reduce(
+        (sum, variant) => sum + variant.stock,
+        0,
+      ),
     });
     const status = canSubmitForReview(qualityScore) ? 'approved' : 'draft';
     const now = new Date().toISOString();
@@ -146,16 +154,73 @@ export async function PATCH(
           now,
         ),
     ];
-    const variantIds = parsed.data.variants.map((variant)=>variant.id).filter(Boolean) as string[];
+    const variantIds = parsed.data.variants
+      .map((variant) => variant.id)
+      .filter(Boolean) as string[];
     statements.push(
-      getD1().prepare(`UPDATE product_variants SET status='inactive',updated_at=? WHERE product_id=?${variantIds.length ? ` AND id NOT IN (${variantIds.map(()=>'?').join(',')})` : ''}`).bind(now,id,...variantIds),
-      ...parsed.data.variants.map((variant)=> variant.id
-        ? getD1().prepare(`UPDATE product_variants SET sku=?,name=?,gtin=?,attributes_json=?,price_cents=?,suggested_retail_cents=?,stock=?,status='active',updated_at=? WHERE id=? AND product_id=?`).bind(variant.sku,variant.name,variant.gtin??null,JSON.stringify(variant.attributes),variant.priceCents,variant.suggestedRetailCents??null,variant.stock,now,variant.id,id)
-        : getD1().prepare(`INSERT INTO product_variants (id,product_id,sku,name,gtin,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'active',?,?)`).bind(crypto.randomUUID(),id,variant.sku,variant.name,variant.gtin??null,JSON.stringify(variant.attributes),variant.priceCents,variant.suggestedRetailCents??null,variant.stock,now,now)),
+      getD1()
+        .prepare(
+          `UPDATE product_variants SET status='inactive',updated_at=? WHERE product_id=?${variantIds.length ? ` AND id NOT IN (${variantIds.map(() => '?').join(',')})` : ''}`,
+        )
+        .bind(now, id, ...variantIds),
+      ...parsed.data.variants.map((variant) =>
+        variant.id
+          ? getD1()
+              .prepare(
+                `UPDATE product_variants SET sku=?,name=?,gtin=?,attributes_json=?,price_cents=?,suggested_retail_cents=?,stock=?,status='active',updated_at=? WHERE id=? AND product_id=?`,
+              )
+              .bind(
+                variant.sku,
+                variant.name,
+                variant.gtin ?? null,
+                JSON.stringify(variant.attributes),
+                variant.priceCents,
+                variant.suggestedRetailCents ?? null,
+                variant.stock,
+                now,
+                variant.id,
+                id,
+              )
+          : getD1()
+              .prepare(
+                `INSERT INTO product_variants (id,product_id,sku,name,gtin,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'active',?,?)`,
+              )
+              .bind(
+                crypto.randomUUID(),
+                id,
+                variant.sku,
+                variant.name,
+                variant.gtin ?? null,
+                JSON.stringify(variant.attributes),
+                variant.priceCents,
+                variant.suggestedRetailCents ?? null,
+                variant.stock,
+                now,
+                now,
+              ),
+      ),
     );
-    const nextStock=parsed.data.variants.reduce((sum,variant)=>sum+variant.stock,0);
-    const stockDelta=nextStock-Number(current.totalStock);
-    if(stockDelta!==0) statements.push(getD1().prepare(`INSERT INTO inventory_movements (id,product_id,organization_id,type,quantity,reference_type,reference_id,created_by,created_at) VALUES (?,?,?,'adjustment',?,'product_edit',?,?,?)`).bind(crypto.randomUUID(),id,account.organization.id,stockDelta,id,account.user.id,now));
+    const nextStock = parsed.data.variants.reduce(
+      (sum, variant) => sum + variant.stock,
+      0,
+    );
+    const stockDelta = nextStock - Number(current.totalStock);
+    if (stockDelta !== 0)
+      statements.push(
+        getD1()
+          .prepare(
+            `INSERT INTO inventory_movements (id,product_id,organization_id,type,quantity,reference_type,reference_id,created_by,created_at) VALUES (?,?,?,'adjustment',?,'product_edit',?,?,?)`,
+          )
+          .bind(
+            crypto.randomUUID(),
+            id,
+            account.organization.id,
+            stockDelta,
+            id,
+            account.user.id,
+            now,
+          ),
+      );
     if (current.priceCents !== parsed.data.priceCents)
       statements.push(
         getD1()

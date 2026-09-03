@@ -31,50 +31,50 @@ export default async function OrdersPage() {
     }>();
   return (
     <AppShell account={account} activePath="/pedidos">
-        <section className="page-heading">
-          <div>
-            <span className="page-kicker">
-              <ShoppingCart /> Operação rastreável
-            </span>
-            <h1>Pedidos</h1>
-            <p>
-              {supplier
-                ? 'Priorize preparação, documentos e prazos de postagem.'
-                : 'Acompanhe pagamento, documentos, envio e entrega.'}
-            </p>
-          </div>
-        </section>
-        <AdminSectionWorkspace
-          section="pedidos"
-          detailBase="/pedidos"
-          columns={[
-            ['number', 'Pedido'],
-            ['status', 'Status'],
-            ['channel', 'Canal'],
-            ['counterpart', supplier ? 'Revendedor' : 'Fornecedor'],
-            ['total', 'Valor'],
-            ['createdAt', 'Criado em'],
-          ]}
-          rows={orders.results.map(
-            (order): AdminWorkspaceRow => ({
-              key: order.id,
-              id: order.id,
-              status: order.status,
-              searchText: `${order.number} ${order.status} ${order.channel} ${order.counterpart}`,
-              cells: {
-                number: order.number,
-                status: order.status.replaceAll('_', ' '),
-                channel: order.channel.replaceAll('_', ' '),
-                counterpart: order.counterpart,
-                total: (Number(order.totalCents) / 100).toLocaleString(
-                  'pt-BR',
-                  { style: 'currency', currency: 'BRL' },
-                ),
-                createdAt: new Date(order.createdAt).toLocaleString('pt-BR'),
-              },
-            }),
-          )}
-        />
+      <section className="page-heading">
+        <div>
+          <span className="page-kicker">
+            <ShoppingCart /> Operação rastreável
+          </span>
+          <h1>Pedidos</h1>
+          <p>
+            {supplier
+              ? 'Priorize preparação, documentos e prazos de postagem.'
+              : 'Acompanhe pagamento, documentos, envio e entrega.'}
+          </p>
+        </div>
+      </section>
+      <AdminSectionWorkspace
+        section="pedidos"
+        detailBase="/pedidos"
+        columns={[
+          ['number', 'Pedido'],
+          ['status', 'Status'],
+          ['channel', 'Canal'],
+          ['counterpart', supplier ? 'Revendedor' : 'Fornecedor'],
+          ['total', 'Valor'],
+          ['createdAt', 'Criado em'],
+        ]}
+        rows={orders.results.map(
+          (order): AdminWorkspaceRow => ({
+            key: order.id,
+            id: order.id,
+            status: order.status,
+            searchText: `${order.number} ${order.status} ${order.channel} ${order.counterpart}`,
+            cells: {
+              number: order.number,
+              status: order.status.replaceAll('_', ' '),
+              channel: order.channel.replaceAll('_', ' '),
+              counterpart: order.counterpart,
+              total: (Number(order.totalCents) / 100).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }),
+              createdAt: new Date(order.createdAt).toLocaleString('pt-BR'),
+            },
+          }),
+        )}
+      />
     </AppShell>
   );
 }

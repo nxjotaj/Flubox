@@ -40,7 +40,8 @@ export default async function RootLayout({
     ) || /^\/produtos\/[^/]+$/.test(pathname);
   let content = children;
   if (
-    !pageOwnsShell && legacyProtected.some(
+    !pageOwnsShell &&
+    legacyProtected.some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
     )
   ) {

@@ -18,8 +18,8 @@ export default async function CartPage() {
     .bind(account.organization.id)
     .all<{
       productId: string;
-      variantId:string|null;
-      variantName:string|null;
+      variantId: string | null;
+      variantName: string | null;
       quantity: number;
       title: string;
       priceCents: number;
@@ -44,7 +44,10 @@ export default async function CartPage() {
             {rows.results.map((item) => (
               <article key={item.productId}>
                 <div>
-                  <strong>{item.title}{item.variantName?` · ${item.variantName}`:''}</strong>
+                  <strong>
+                    {item.title}
+                    {item.variantName ? ` · ${item.variantName}` : ''}
+                  </strong>
                   <small>
                     {item.quantity} ×{' '}
                     {(item.priceCents / 100).toLocaleString('pt-BR', {
@@ -81,7 +84,7 @@ export default async function CartPage() {
             <CheckoutForm
               items={rows.results.map((item) => ({
                 productId: item.productId,
-                variantId: item.variantId??undefined,
+                variantId: item.variantId ?? undefined,
                 quantity: item.quantity,
               }))}
             />

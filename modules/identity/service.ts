@@ -85,16 +85,32 @@ export const getAccountContext = cache(async function getAccountContext(
     await syncAuthenticatedUser(authUser);
     return null;
   }
-  if (row.organization_type === 'reseller' && row.organization_status === 'suspended') {
+  if (
+    row.organization_type === 'reseller' &&
+    row.organization_status === 'suspended'
+  ) {
     const profile = await getD1()
-      .prepare('SELECT deactivated_until deactivatedUntil FROM reseller_profiles WHERE organization_id=?')
+      .prepare(
+        'SELECT deactivated_until deactivatedUntil FROM reseller_profiles WHERE organization_id=?',
+      )
       .bind(row.organization_id)
       .first<{ deactivatedUntil: string | null }>();
-    if (profile?.deactivatedUntil && new Date(profile.deactivatedUntil).getTime() <= Date.now()) {
+    if (
+      profile?.deactivatedUntil &&
+      new Date(profile.deactivatedUntil).getTime() <= Date.now()
+    ) {
       const now = new Date().toISOString();
       await getD1().batch([
-        getD1().prepare("UPDATE organizations SET status='active',updated_at=? WHERE id=?").bind(now,row.organization_id),
-        getD1().prepare('UPDATE reseller_profiles SET deactivated_until=NULL,updated_at=? WHERE organization_id=?').bind(now,row.organization_id),
+        getD1()
+          .prepare(
+            "UPDATE organizations SET status='active',updated_at=? WHERE id=?",
+          )
+          .bind(now, row.organization_id),
+        getD1()
+          .prepare(
+            'UPDATE reseller_profiles SET deactivated_until=NULL,updated_at=? WHERE organization_id=?',
+          )
+          .bind(now, row.organization_id),
       ]);
       row.organization_status = 'active';
     }
@@ -208,8 +224,9 @@ export async function requireAccountPermission(
     )
     .bind(account.memberId, permission)
     .first<{ allowed: boolean }>();
-  const allowed = override ? Boolean(override.allowed) : roleAllows(account.role as RoleKey, permission);
-  if (!allowed)
-    throw new Error('FORBIDDEN');
+  const allowed = override
+    ? Boolean(override.allowed)
+    : roleAllows(account.role as RoleKey, permission);
+  if (!allowed) throw new Error('FORBIDDEN');
   return account;
 }

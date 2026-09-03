@@ -1,11 +1,11 @@
-import { requireAuthenticatedUser } from "@/app/chatgpt-auth";
-import { AppShell } from "@/components/app-shell";
+import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
+import { AppShell } from '@/components/app-shell';
 import {
   AdminSectionWorkspace,
   type AdminWorkspaceRow,
-} from "@/components/admin-section-workspace";
-import { getD1 } from "@/db";
-import { getAccountContext } from "@/modules/identity/service";
+} from '@/components/admin-section-workspace';
+import { getD1 } from '@/db';
+import { getAccountContext } from '@/modules/identity/service';
 import {
   ArrowUpRight,
   CircleDollarSign,
@@ -13,17 +13,17 @@ import {
   ReceiptText,
   TriangleAlert,
   WalletCards,
-} from "lucide-react";
-import { redirect } from "next/navigation";
-import { ExpenseForm } from "./expense-form";
-export const dynamic = "force-dynamic";
+} from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { ExpenseForm } from './expense-form';
+export const dynamic = 'force-dynamic';
 const money = (value: number) =>
-  (value / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  (value / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 export default async function AdminFinancePage() {
-  const user = await requireAuthenticatedUser("/admin/financeiro");
+  const user = await requireAuthenticatedUser('/admin/financeiro');
   const account = await getAccountContext(user);
-  if (!account || account.organization.type !== "platform")
-    redirect("/dashboard");
+  if (!account || account.organization.type !== 'platform')
+    redirect('/dashboard');
   const [orders, ledger, payouts, subscriptions, expenses, refunds] =
     await Promise.all([
       getD1()
@@ -183,28 +183,30 @@ export default async function AdminFinancePage() {
       <AdminSectionWorkspace
         section="financeiro"
         columns={[
-          ["createdAt", "Data"],
-          ["organization", "Organização"],
-          ["account", "Conta"],
-          ["direction", "Direção"],
-          ["amount", "Valor"],
-          ["status", "Status"],
-          ["reference", "Referência"],
+          ['createdAt', 'Data'],
+          ['organization', 'Organização'],
+          ['account', 'Conta'],
+          ['direction', 'Direção'],
+          ['amount', 'Valor'],
+          ['status', 'Status'],
+          ['reference', 'Referência'],
         ]}
-        rows={ledger.results.map((entry): AdminWorkspaceRow => ({
-          key: entry.id,
-          status: entry.status,
-          searchText: `${entry.organization} ${entry.account} ${entry.direction} ${entry.referenceType} ${entry.referenceId}`,
-          cells: {
-            createdAt: new Date(entry.createdAt).toLocaleString("pt-BR"),
-            organization: entry.organization,
-            account: entry.account.replaceAll("_", " "),
-            direction: entry.direction,
-            amount: `${entry.direction === "credit" ? "+" : "-"} ${money(Number(entry.amountCents))}`,
+        rows={ledger.results.map(
+          (entry): AdminWorkspaceRow => ({
+            key: entry.id,
             status: entry.status,
-            reference: `${entry.referenceType} · ${entry.referenceId}`,
-          },
-        }))}
+            searchText: `${entry.organization} ${entry.account} ${entry.direction} ${entry.referenceType} ${entry.referenceId}`,
+            cells: {
+              createdAt: new Date(entry.createdAt).toLocaleString('pt-BR'),
+              organization: entry.organization,
+              account: entry.account.replaceAll('_', ' '),
+              direction: entry.direction,
+              amount: `${entry.direction === 'credit' ? '+' : '-'} ${money(Number(entry.amountCents))}`,
+              status: entry.status,
+              reference: `${entry.referenceType} · ${entry.referenceId}`,
+            },
+          }),
+        )}
       />
     </AppShell>
   );

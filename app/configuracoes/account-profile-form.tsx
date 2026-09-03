@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import {
   Building2,
   Camera,
@@ -6,9 +6,9 @@ import {
   PauseCircle,
   Save,
   UserRound,
-} from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+} from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 type Profile = {
   name: string;
   email: string;
@@ -30,19 +30,19 @@ type Profile = {
 };
 export function AccountProfileForm({ profile }: { profile: Profile }) {
   const router = useRouter();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   async function avatar(form: FormData) {
     setBusy(true);
-    const response = await fetch("/api/account/avatar", {
-      method: "POST",
+    const response = await fetch('/api/account/avatar', {
+      method: 'POST',
       body: form,
     });
     const result = (await response.json()) as { error?: string };
     setMessage(
       response.ok
-        ? "Foto atualizada com sucesso."
-        : (result.error ?? "Falha ao atualizar a foto."),
+        ? 'Foto atualizada com sucesso.'
+        : (result.error ?? 'Falha ao atualizar a foto.'),
     );
     setBusy(false);
     if (response.ok) router.refresh();
@@ -50,9 +50,9 @@ export function AccountProfileForm({ profile }: { profile: Profile }) {
   async function save(form: FormData) {
     setBusy(true);
     const body = Object.fromEntries(form.entries());
-    const response = await fetch("/api/account/profile", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
+    const response = await fetch('/api/account/profile', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
     });
     const result = (await response.json()) as {
@@ -62,30 +62,30 @@ export function AccountProfileForm({ profile }: { profile: Profile }) {
     setMessage(
       response.ok
         ? result.emailConfirmationRequired
-          ? "Dados salvos. Confirme o novo e-mail para concluir a troca."
-          : "Dados salvos com sucesso."
-        : (result.error ?? "Falha ao salvar."),
+          ? 'Dados salvos. Confirme o novo e-mail para concluir a troca.'
+          : 'Dados salvos com sucesso.'
+        : (result.error ?? 'Falha ao salvar.'),
     );
     setBusy(false);
     if (response.ok) router.refresh();
   }
   async function deactivate(form: FormData) {
-    if (!confirm("Sua conta ficará indisponível por 30 dias. Confirmar?"))
+    if (!confirm('Sua conta ficará indisponível por 30 dias. Confirmar?'))
       return;
     setBusy(true);
-    const response = await fetch("/api/account/deactivate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
+    const response = await fetch('/api/account/deactivate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify(Object.fromEntries(form.entries())),
     });
     const result = (await response.json()) as { error?: string };
     setMessage(
       response.ok
-        ? "Conta desativada por 30 dias. Encerrando sessão…"
-        : (result.error ?? "Falha ao desativar."),
+        ? 'Conta desativada por 30 dias. Encerrando sessão…'
+        : (result.error ?? 'Falha ao desativar.'),
     );
     setBusy(false);
-    if (response.ok) location.assign("/auth/signout?returnTo=/");
+    if (response.ok) location.assign('/auth/signout?returnTo=/');
   }
   return (
     <div className="account-settings-grid">
@@ -207,7 +207,7 @@ export function AccountProfileForm({ profile }: { profile: Profile }) {
           <input name="pixKey" defaultValue={profile.pixKey} />
         </label>
         <button disabled={busy}>
-          <Save /> {busy ? "Salvando…" : "Salvar minha conta"}
+          <Save /> {busy ? 'Salvando…' : 'Salvar minha conta'}
         </button>
         {message && <output>{message}</output>}
       </form>

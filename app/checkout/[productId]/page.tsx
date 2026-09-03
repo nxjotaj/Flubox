@@ -22,8 +22,13 @@ export default async function Checkout({
     .prepare(
       `SELECT p.title,COALESCE(v.price_cents,o.price_cents) priceCents,v.name variantName,org.display_name supplier FROM products p JOIN supplier_offers o ON o.product_id=p.id JOIN organizations org ON org.id=p.organization_id AND org.status='active' JOIN subscriptions sub ON sub.organization_id=org.id AND sub.status IN ('active','grace_period') LEFT JOIN product_variants v ON v.id=? AND v.product_id=p.id AND v.status='active' WHERE p.id=? AND p.status='approved' AND (? IS NULL OR v.id IS NOT NULL)`,
     )
-    .bind(variantId??null,productId,variantId??null)
-    .first<{ title: string; priceCents: number; variantName:string|null; supplier: string }>();
+    .bind(variantId ?? null, productId, variantId ?? null)
+    .first<{
+      title: string;
+      priceCents: number;
+      variantName: string | null;
+      supplier: string;
+    }>();
   if (!product) notFound();
   return (
     <main className="simple-app-page">
@@ -37,7 +42,9 @@ export default async function Checkout({
         <span className="eyebrow">Checkout de fornecedor único</span>
         <h1>Criar pedido</h1>
         <p>
-          {product.title}{product.variantName?` · ${product.variantName}`:''} · {product.supplier} ·{' '}
+          {product.title}
+          {product.variantName ? ` · ${product.variantName}` : ''} ·{' '}
+          {product.supplier} ·{' '}
           {(product.priceCents / 100).toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL',

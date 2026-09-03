@@ -31,7 +31,20 @@ const schema = z.object({
   suggestedRetailCents: z.int().positive().optional(),
   stock: z.int().nonnegative(),
   preparationDays: z.int().min(1).max(30),
-  variants: z.array(z.object({name:z.string().trim().min(1).max(100),sku:z.string().trim().min(1).max(64),gtin:z.string().trim().max(14).optional(),attributes:z.record(z.string(),z.string().max(100)),priceCents:z.int().positive(),suggestedRetailCents:z.int().positive().optional(),stock:z.int().nonnegative()})).max(100).default([]),
+  variants: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(100),
+        sku: z.string().trim().min(1).max(64),
+        gtin: z.string().trim().max(14).optional(),
+        attributes: z.record(z.string(), z.string().max(100)),
+        priceCents: z.int().positive(),
+        suggestedRetailCents: z.int().positive().optional(),
+        stock: z.int().nonnegative(),
+      }),
+    )
+    .max(100)
+    .default([]),
 });
 export async function POST(request: Request): Promise<Response> {
   const requestId = requestIdFrom(request);
@@ -108,8 +121,12 @@ export async function POST(request: Request): Promise<Response> {
       ...input,
       categoryId: input.categoryId,
     });
-    const totalStock=input.variants.length?input.variants.reduce((sum,variant)=>sum+variant.stock,0):input.stock;
-    const basePrice=input.variants.length?Math.min(...input.variants.map(variant=>variant.priceCents)):input.priceCents;
+    const totalStock = input.variants.length
+      ? input.variants.reduce((sum, variant) => sum + variant.stock, 0)
+      : input.stock;
+    const basePrice = input.variants.length
+      ? Math.min(...input.variants.map((variant) => variant.priceCents))
+      : input.priceCents;
     // Produtos elegíveis são publicados automaticamente. A administração
     // modera exceções, mas não integra uma fila obrigatória de aprovação.
     const status = canSubmitForReview(qualityScore) ? 'approved' : 'draft';
@@ -203,9 +220,42 @@ export async function POST(request: Request): Promise<Response> {
         ),
       ...(input.variants.length
         ? input.variants.map((variant) =>
-            d1.prepare(`INSERT INTO product_variants (id,product_id,sku,name,gtin,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'active',?,?)`).bind(crypto.randomUUID(),id,variant.sku,variant.name,variant.gtin??null,JSON.stringify(variant.attributes),variant.priceCents,variant.suggestedRetailCents??null,variant.stock,now,now),
+            d1
+              .prepare(
+                `INSERT INTO product_variants (id,product_id,sku,name,gtin,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'active',?,?)`,
+              )
+              .bind(
+                crypto.randomUUID(),
+                id,
+                variant.sku,
+                variant.name,
+                variant.gtin ?? null,
+                JSON.stringify(variant.attributes),
+                variant.priceCents,
+                variant.suggestedRetailCents ?? null,
+                variant.stock,
+                now,
+                now,
+              ),
           )
-        : [d1.prepare(`INSERT INTO product_variants (id,product_id,sku,name,gtin,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at) VALUES (?,?,?,?,?,'{}',?,?,?,'active',?,?)`).bind(crypto.randomUUID(),id,input.sku,'Padrão',input.gtin??null,input.priceCents,input.suggestedRetailCents??null,input.stock,now,now)]),
+        : [
+            d1
+              .prepare(
+                `INSERT INTO product_variants (id,product_id,sku,name,gtin,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at) VALUES (?,?,?,?,?,'{}',?,?,?,'active',?,?)`,
+              )
+              .bind(
+                crypto.randomUUID(),
+                id,
+                input.sku,
+                'Padrão',
+                input.gtin ?? null,
+                input.priceCents,
+                input.suggestedRetailCents ?? null,
+                input.stock,
+                now,
+                now,
+              ),
+          ]),
     ]);
     return Response.json(
       {

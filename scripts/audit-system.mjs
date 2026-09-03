@@ -95,8 +95,7 @@ if (supplierProduct?.id)
   profiles[1].routes.push(`/produtos/${supplierProduct.id}`);
 if (supplierOrg?.id)
   profiles[0].routes.push(`/admin/fornecedores/${supplierOrg.id}`);
-if (supplierOrg?.id)
-  profiles[2].routes.push(`/fornecedores/${supplierOrg.id}`);
+if (supplierOrg?.id) profiles[2].routes.push(`/fornecedores/${supplierOrg.id}`);
 if (resellerOrg?.id)
   profiles[0].routes.push(`/admin/revendedores/${resellerOrg.id}`);
 if (member?.id)
@@ -127,7 +126,7 @@ for (const profile of profiles) {
       const response = await fetch(`${baseUrl}${route}`, {
         headers: { cookie },
         redirect: 'follow',
-    signal: AbortSignal.timeout(60_000),
+        signal: AbortSignal.timeout(60_000),
       });
       const html = await response.text();
       const hasError =

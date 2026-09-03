@@ -265,7 +265,15 @@ await sql.begin(async (tx) => {
       `INSERT INTO product_variants (id,product_id,sku,name,attributes_json,price_cents,suggested_retail_cents,stock,status,created_at,updated_at)
        VALUES ($1,$2,$3,'Padrão','{}',$4,$5,$6,'active',$7,$7)
        ON CONFLICT (product_id,sku) DO UPDATE SET id=excluded.id,price_cents=excluded.price_cents,suggested_retail_cents=excluded.suggested_retail_cents,stock=excluded.stock,status='active',updated_at=excluded.updated_at`,
-      [id.replace('40000000-','41000000-'),id,sku,price,retail,stock,now],
+      [
+        id.replace('40000000-', '41000000-'),
+        id,
+        sku,
+        price,
+        retail,
+        stock,
+        now,
+      ],
     );
     await tx.unsafe(
       `INSERT INTO inventory_movements (id,product_id,organization_id,type,quantity,reference_type,reference_id,created_by,created_at)

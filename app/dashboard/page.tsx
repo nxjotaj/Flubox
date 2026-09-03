@@ -34,14 +34,31 @@ export default async function DashboardPage() {
           ? `SELECT COUNT(*) orders,COALESCE(SUM(total_cents),0) volume,SUM(CASE WHEN status IN ('paid_awaiting_documents','ready_for_supplier','preparing','ready_to_ship') THEN 1 ELSE 0 END) pending,SUM(CASE WHEN status IN ('shipped','in_transit') THEN 1 ELSE 0 END) transit,(SELECT COUNT(*) FROM products WHERE organization_id=?) products,(SELECT COUNT(*) FROM products p WHERE p.organization_id=? AND (SELECT COALESCE(SUM(quantity),0) FROM inventory_movements m WHERE m.product_id=p.id)<=5) lowStock,(SELECT COALESCE(SUM(net_cents),0) FROM payouts WHERE organization_id=? AND status='paid') paidOut,(SELECT COUNT(*) FROM shipments s JOIN orders x ON x.id=s.order_id WHERE x.supplier_organization_id=? AND s.shipped_at IS NULL AND s.preparation_deadline::timestamptz<NOW()) overdue FROM orders WHERE supplier_organization_id=?`
           : `SELECT COUNT(*) orders,COALESCE(SUM(total_cents),0) volume,SUM(CASE WHEN status IN ('shipped','in_transit') THEN 1 ELSE 0 END) transit,SUM(CASE WHEN status='awaiting_payment' THEN 1 ELSE 0 END) paymentPending,SUM(CASE WHEN status='paid_awaiting_documents' THEN 1 ELSE 0 END) docsPending,(SELECT COUNT(*) FROM product_favorites WHERE organization_id=?) favorites,(SELECT COUNT(*) FROM supplier_followers WHERE reseller_organization_id=?) following,(SELECT COALESCE(SUM(remaining_cents),0) FROM relationship_credits WHERE reseller_organization_id=? AND status='available') credits FROM orders WHERE reseller_organization_id=?`,
       )
-      .bind(...(supplier ? [organizationId,organizationId,organizationId,organizationId,organizationId] : [organizationId,organizationId,organizationId,organizationId]))
+      .bind(
+        ...(supplier
+          ? [
+              organizationId,
+              organizationId,
+              organizationId,
+              organizationId,
+              organizationId,
+            ]
+          : [organizationId, organizationId, organizationId, organizationId]),
+      )
       .first<{
         orders: number;
         volume: number;
         pending: number;
         transit: number;
         favorites: number;
-        products:number;lowStock:number;paidOut:number;overdue:number;paymentPending:number;docsPending:number;following:number;credits:number;
+        products: number;
+        lowStock: number;
+        paidOut: number;
+        overdue: number;
+        paymentPending: number;
+        docsPending: number;
+        following: number;
+        credits: number;
       }>(),
     getD1()
       .prepare(
@@ -92,22 +109,70 @@ export default async function DashboardPage() {
           'Pedidos pagos e processados',
           CircleDollarSign,
           'positive',
-      ],
-      ['Produtos publicados',String(metrics?.products??0),'Catálogo da organização',PackageCheck,''],
-      ['Estoque crítico',String(metrics?.lowStock??0),'Itens com 5 unidades ou menos',Box,(metrics?.lowStock??0)>0?'warning':'positive'],
-      ['Repasses pagos',money(metrics?.paidOut??0),'Líquido recebido',CircleDollarSign,'positive'],
-      ['Envios atrasados',String(metrics?.overdue??0),'Acima do prazo de 1 dia útil',Clock3,(metrics?.overdue??0)>0?'warning':'positive'],
+        ],
+        [
+          'Produtos publicados',
+          String(metrics?.products ?? 0),
+          'Catálogo da organização',
+          PackageCheck,
+          '',
+        ],
+        [
+          'Estoque crítico',
+          String(metrics?.lowStock ?? 0),
+          'Itens com 5 unidades ou menos',
+          Box,
+          (metrics?.lowStock ?? 0) > 0 ? 'warning' : 'positive',
+        ],
+        [
+          'Repasses pagos',
+          money(metrics?.paidOut ?? 0),
+          'Líquido recebido',
+          CircleDollarSign,
+          'positive',
+        ],
+        [
+          'Envios atrasados',
+          String(metrics?.overdue ?? 0),
+          'Acima do prazo de 1 dia útil',
+          Clock3,
+          (metrics?.overdue ?? 0) > 0 ? 'warning' : 'positive',
+        ],
         [
           'Pedidos recebidos',
           String(metrics?.orders ?? 0),
           'Todo o período',
           ShoppingCart,
           '',
-      ],
-      ['Aguardando PIX',String(metrics?.paymentPending??0),'Pedidos ainda não conciliados',Clock3,(metrics?.paymentPending??0)>0?'warning':''],
-      ['Documentos pendentes',String(metrics?.docsPending??0),'Etiquetas ou fiscal a enviar',Box,(metrics?.docsPending??0)>0?'warning':'positive'],
-      ['Fornecedores seguidos',String(metrics?.following??0),'Alertas comerciais ativos',PackageCheck,'positive'],
-      ['Créditos disponíveis',money(metrics?.credits??0),'Créditos por relacionamento',CircleDollarSign,'positive'],
+        ],
+        [
+          'Aguardando PIX',
+          String(metrics?.paymentPending ?? 0),
+          'Pedidos ainda não conciliados',
+          Clock3,
+          (metrics?.paymentPending ?? 0) > 0 ? 'warning' : '',
+        ],
+        [
+          'Documentos pendentes',
+          String(metrics?.docsPending ?? 0),
+          'Etiquetas ou fiscal a enviar',
+          Box,
+          (metrics?.docsPending ?? 0) > 0 ? 'warning' : 'positive',
+        ],
+        [
+          'Fornecedores seguidos',
+          String(metrics?.following ?? 0),
+          'Alertas comerciais ativos',
+          PackageCheck,
+          'positive',
+        ],
+        [
+          'Créditos disponíveis',
+          money(metrics?.credits ?? 0),
+          'Créditos por relacionamento',
+          CircleDollarSign,
+          'positive',
+        ],
         [
           'A preparar',
           String(metrics?.pending ?? 0),

@@ -29,8 +29,17 @@ export function calculateProductQuality(input: ProductQualityInput): number {
   if (Number.isInteger(input.stock) && input.stock >= 0) score += 3;
   if (Number.isInteger(input.preparationDays) && input.preparationDays > 0)
     score += 3;
-  if (Number.isInteger(input.grossWeightGrams) && (input.grossWeightGrams ?? 0) > 0) score += 5;
-  if ([input.packageHeightMm,input.packageWidthMm,input.packageLengthMm].every(value=>Number.isInteger(value)&&(value??0)>0)) score += 5;
+  if (
+    Number.isInteger(input.grossWeightGrams) &&
+    (input.grossWeightGrams ?? 0) > 0
+  )
+    score += 5;
+  if (
+    [input.packageHeightMm, input.packageWidthMm, input.packageLengthMm].every(
+      (value) => Number.isInteger(value) && (value ?? 0) > 0,
+    )
+  )
+    score += 5;
   return Math.min(100, score);
 }
 export function canSubmitForReview(score: number): boolean {

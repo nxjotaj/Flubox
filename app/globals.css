@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @theme inline {
   --color-background: var(--background);
@@ -1034,7 +1034,7 @@ a {
   font-weight: 700;
   cursor: pointer;
 }
-.maintenance-box [role="status"] {
+.maintenance-box [role='status'] {
   display: block;
   margin-top: 12px;
   padding: 10px;
@@ -1222,7 +1222,7 @@ a {
   justify-content: center;
 }
 .hero-visual::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 8% 5%;
   border-radius: 50%;
@@ -1287,7 +1287,7 @@ a {
   place-items: center;
 }
 .status-dot::after {
-  content: "";
+  content: '';
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -1492,7 +1492,7 @@ a {
   place-items: center;
 }
 .supplier-visual::before {
-  content: "";
+  content: '';
   position: absolute;
   width: 380px;
   height: 380px;
@@ -3910,7 +3910,7 @@ button:not(:disabled):active,
 }
 
 .app-sidebar::before {
-  content: "";
+  content: '';
   position: absolute;
   z-index: -1;
   inset: 0;
@@ -3944,7 +3944,7 @@ button:not(:disabled):active,
 }
 
 .workspace-chip::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 11px;
   right: 11px;
@@ -4011,7 +4011,7 @@ button:not(:disabled):active,
 }
 
 .app-sidebar nav a::after {
-  content: "";
+  content: '';
   position: absolute;
   left: -8px;
   width: 3px;
@@ -4279,7 +4279,7 @@ button:not(:disabled):active,
 }
 
 .app-frame .metric-card::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   opacity: 0;
@@ -4292,7 +4292,7 @@ button:not(:disabled):active,
 }
 
 .app-frame .metric-card::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: auto 20px 0;
   height: 2px;
@@ -4515,7 +4515,7 @@ button:not(:disabled):active,
   background: transparent;
 }
 
-input:not([type="checkbox"]):not([type="radio"]),
+input:not([type='checkbox']):not([type='radio']),
 select,
 textarea {
   color: #1b1d21;
@@ -4528,13 +4528,13 @@ textarea {
     background var(--motion-fast) ease;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):hover,
+input:not([type='checkbox']):not([type='radio']):hover,
 select:hover,
 textarea:hover {
   border-color: #bfc4cc !important;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):focus,
+input:not([type='checkbox']):not([type='radio']):focus,
 select:focus,
 textarea:focus {
   outline: 0;
@@ -4590,7 +4590,7 @@ tbody tr:hover {
 .loading-block::after,
 .loading-header::after,
 .loading-sidebar::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -4737,11 +4737,11 @@ tbody tr:hover {
       ),
       #111216 !important;
   }
-  .mobile-menu-sheet [data-slot="sheet-title"] {
+  .mobile-menu-sheet [data-slot='sheet-title'] {
     color: #fff;
     font-size: 19px;
   }
-  .mobile-menu-sheet [data-slot="sheet-description"] {
+  .mobile-menu-sheet [data-slot='sheet-description'] {
     color: #8e939b;
   }
   .mobile-menu-sheet nav {
@@ -5377,7 +5377,7 @@ tbody tr:hover {
   overflow: hidden;
 }
 .auth-aside::before {
-  content: "";
+  content: '';
   position: absolute;
   width: 500px;
   height: 500px;

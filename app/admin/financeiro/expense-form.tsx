@@ -15,7 +15,14 @@ export function ExpenseForm() {
       body: JSON.stringify({
         category: form.get('category'),
         description: form.get('description'),
-        amountCents: Math.round(Number((typeof form.get('amount')==='string'?form.get('amount') as string:'').replace(',', '.')) * 100),
+        amountCents: Math.round(
+          Number(
+            (typeof form.get('amount') === 'string'
+              ? (form.get('amount') as string)
+              : ''
+            ).replace(',', '.'),
+          ) * 100,
+        ),
         incurredAt: form.get('incurredAt'),
         reason: form.get('reason'),
       }),

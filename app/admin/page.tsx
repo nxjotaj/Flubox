@@ -160,13 +160,7 @@ export default async function AdminPage() {
       ShieldAlert,
       'warning',
     ],
-    [
-      'Usuários',
-      String(metrics?.users ?? 0),
-      'Com acesso ativo',
-      Users,
-      '',
-    ],
+    ['Usuários', String(metrics?.users ?? 0), 'Com acesso ativo', Users, ''],
     [
       'Cadastros pendentes',
       String(metrics?.pendingSuppliers ?? 0),
@@ -313,21 +307,46 @@ export default async function AdminPage() {
         <header>
           <div>
             <h2>Status das conexões externas</h2>
-            <p>Dependências que precisam de credenciais ou contratação para operar em produção.</p>
+            <p>
+              Dependências que precisam de credenciais ou contratação para
+              operar em produção.
+            </p>
           </div>
           <a href="/configuracoes">Configurar</a>
         </header>
         <div className="connection-grid">
           {[
             ['Supabase e banco', true, 'Conectado'],
-            ['Cobrança recorrente', Boolean(process.env.PAYMENT_PROVIDER_SECRET), 'Credencial pendente'],
-            ['PIX e conciliação', Boolean(process.env.PIX_PROVIDER_SECRET), 'Credencial pendente'],
-            ['Logística e rastreio', Boolean(process.env.LOGISTICS_PROVIDER_SECRET), 'Credencial pendente'],
-            ['E-mail transacional', Boolean(process.env.EMAIL_PROVIDER_SECRET), 'Credencial pendente'],
+            [
+              'Cobrança recorrente',
+              Boolean(process.env.PAYMENT_PROVIDER_SECRET),
+              'Credencial pendente',
+            ],
+            [
+              'PIX e conciliação',
+              Boolean(process.env.PIX_PROVIDER_SECRET),
+              'Credencial pendente',
+            ],
+            [
+              'Logística e rastreio',
+              Boolean(process.env.LOGISTICS_PROVIDER_SECRET),
+              'Credencial pendente',
+            ],
+            [
+              'E-mail transacional',
+              Boolean(process.env.EMAIL_PROVIDER_SECRET),
+              'Credencial pendente',
+            ],
           ].map(([label, connected, pending]) => (
-            <article key={String(label)} className={connected ? 'connected' : 'pending'}>
+            <article
+              key={String(label)}
+              className={connected ? 'connected' : 'pending'}
+            >
               <i />
-              <div><strong>{String(label)}</strong><small>{connected ? 'Operacional' : String(pending)}</small></div>
+              <div>
+                <strong>{String(label)}</strong>
+                <small>{connected ? 'Operacional' : String(pending)}</small>
+              </div>
             </article>
           ))}
         </div>

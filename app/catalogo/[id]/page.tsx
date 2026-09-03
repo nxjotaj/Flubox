@@ -1,13 +1,13 @@
-import { requireAuthenticatedUser } from "@/app/chatgpt-auth";
-import { BrandLogo } from "@/components/brand-logo";
-import { getD1 } from "@/db";
-import { getAccountContext } from "@/modules/identity/service";
-import { notFound, redirect } from "next/navigation";
-import { FavoriteButton, ListPicker } from "../catalog-actions";
-import { VariantSelector } from "./variant-selector";
-import Image from "next/image";
+import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
+import { BrandLogo } from '@/components/brand-logo';
+import { getD1 } from '@/db';
+import { getAccountContext } from '@/modules/identity/service';
+import { notFound, redirect } from 'next/navigation';
+import { FavoriteButton, ListPicker } from '../catalog-actions';
+import { VariantSelector } from './variant-selector';
+import Image from 'next/image';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 type Detail = {
   id: string;
   title: string;
@@ -31,8 +31,8 @@ export default async function ProductDetail({
   const { id } = await params;
   const user = await requireAuthenticatedUser(`/catalogo/${id}`);
   const account = await getAccountContext(user);
-  if (!account) redirect("/cadastro");
-  if (account.organization.type !== "reseller") redirect("/produtos");
+  if (!account) redirect('/cadastro');
+  if (account.organization.type !== 'reseller') redirect('/produtos');
   const product = await getD1()
     .prepare(
       `SELECT * FROM (SELECT p.id,p.title,p.description,p.brand,p.sku,org.display_name supplier,sp.reputation_basis_points reputation,o.price_cents priceCents,o.suggested_retail_cents retailCents,o.commission_basis_points commission,o.preparation_days preparationDays,COALESCE((SELECT SUM(quantity) FROM inventory_movements WHERE product_id=p.id),0)-COALESCE((SELECT SUM(quantity) FROM inventory_reservations WHERE product_id=p.id AND status='active' AND expires_at>?),0) stock,CASE WHEN f.product_id IS NULL THEN 0 ELSE 1 END favorited FROM products p JOIN supplier_offers o ON o.product_id=p.id JOIN organizations org ON org.id=p.organization_id AND org.status='active' JOIN subscriptions sub ON sub.organization_id=org.id AND sub.status IN ('active','grace_period') JOIN supplier_profiles sp ON sp.organization_id=org.id LEFT JOIN product_favorites f ON f.product_id=p.id AND f.organization_id=? WHERE p.id=? AND p.status='approved') catalog WHERE stock>0`,
@@ -49,7 +49,7 @@ export default async function ProductDetail({
       .all<{ label: string; value: string; unit: string | null }>(),
     getD1()
       .prepare(
-        "SELECT id,name FROM product_lists WHERE organization_id=? ORDER BY name",
+        'SELECT id,name FROM product_lists WHERE organization_id=? ORDER BY name',
       )
       .bind(account.organization.id)
       .all<{ id: string; name: string }>(),
@@ -99,28 +99,28 @@ export default async function ProductDetail({
               ))}
             </div>
           ) : (
-            (product.brand?.slice(0, 1) ?? "F")
+            (product.brand?.slice(0, 1) ?? 'F')
           )}
         </div>
         <div>
           <span className="eyebrow">
-            {product.brand ?? "Produto selecionado"}
+            {product.brand ?? 'Produto selecionado'}
           </span>
           <h1>{product.title}</h1>
           <p>{product.description}</p>
           <div className="detail-price">
             <strong>
-              {(product.priceCents / 100).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
+              {(product.priceCents / 100).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
               })}
             </strong>
             {product.retailCents && (
               <span>
-                Preço sugerido{" "}
-                {(product.retailCents / 100).toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
+                Preço sugerido{' '}
+                {(product.retailCents / 100).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
                 })}
               </span>
             )}
@@ -159,7 +159,7 @@ export default async function ProductDetail({
                   <strong>{item.label}</strong>
                   <span>
                     {item.value}
-                    {item.unit ? ` ${item.unit}` : ""}
+                    {item.unit ? ` ${item.unit}` : ''}
                   </span>
                 </p>
               ))}

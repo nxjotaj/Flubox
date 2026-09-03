@@ -33,7 +33,12 @@ export default async function TeamPage() {
     )
     .bind(account.organization.id)
     .all<{ email: string; status: string; expiresAt: string }>();
-  const overrides = await getD1().prepare(`SELECT member_id memberId,permission_key permissionKey FROM member_permission_overrides WHERE allowed=TRUE AND member_id IN (SELECT id FROM organization_members WHERE organization_id=?)`).bind(account.organization.id).all<{memberId:string;permissionKey:string}>();
+  const overrides = await getD1()
+    .prepare(
+      `SELECT member_id memberId,permission_key permissionKey FROM member_permission_overrides WHERE allowed=TRUE AND member_id IN (SELECT id FROM organization_members WHERE organization_id=?)`,
+    )
+    .bind(account.organization.id)
+    .all<{ memberId: string; permissionKey: string }>();
   return (
     <main className="simple-app-page">
       <header>
@@ -65,7 +70,15 @@ export default async function TeamPage() {
                 member.userId !== account.user.id && (
                   <MemberActions memberId={member.id} />
                 )}
-              {account.role === 'supplier_owner' && member.roleKey === 'supplier_member' && <PermissionEditor memberId={member.id} initial={overrides.results.filter(item => item.memberId===member.id).map(item => item.permissionKey)} />}
+              {account.role === 'supplier_owner' &&
+                member.roleKey === 'supplier_member' && (
+                  <PermissionEditor
+                    memberId={member.id}
+                    initial={overrides.results
+                      .filter((item) => item.memberId === member.id)
+                      .map((item) => item.permissionKey)}
+                  />
+                )}
             </article>
           ))}
           {invites.results.map((invite) => (

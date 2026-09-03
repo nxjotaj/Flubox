@@ -26,7 +26,11 @@ export function CheckoutForm({
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         items: items ?? [
-          { productId: productId!, variantId, quantity: Number(value('quantity')) },
+          {
+            productId: productId!,
+            variantId,
+            quantity: Number(value('quantity')),
+          },
         ],
         channel: value('channel'),
         externalReference: value('externalReference') || undefined,

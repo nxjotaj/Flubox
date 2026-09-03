@@ -1,3 +1,56 @@
-import { getAuthenticatedUser } from '@/app/chatgpt-auth';import { getD1 } from '@/db';import { requestIdFrom } from '@/lib/request-context';import { getAccountContext } from '@/modules/identity/service';import { z } from 'zod';
-const schema=z.object({confirmation:z.literal('DESATIVAR'),reason:z.string().trim().min(5).max(500)});
-export async function POST(request:Request){const requestId=requestIdFrom(request);const user=await getAuthenticatedUser();if(!user)return Response.json({error:'Faça login.',requestId},{status:401});const account=await getAccountContext(user);if(!account||account.organization.type!=='reseller')return Response.json({error:'Acesso exclusivo do revendedor.',requestId},{status:403});const parsed=schema.safeParse(await request.json());if(!parsed.success)return Response.json({error:'Digite DESATIVAR e informe o motivo.',requestId},{status:422});const now=new Date();const until=new Date(now.getTime()+30*86400000).toISOString();await getD1().batch([getD1().prepare(`UPDATE organizations SET status='suspended',updated_at=? WHERE id=?`).bind(now.toISOString(),account.organization.id),getD1().prepare(`UPDATE reseller_profiles SET deactivated_until=?,updated_at=? WHERE organization_id=?`).bind(until,now.toISOString(),account.organization.id),getD1().prepare(`INSERT INTO audit_logs (id,actor_user_id,organization_id,action,entity_type,entity_id,request_id,reason,metadata,created_at) VALUES (?,?,?,'account.deactivated_30_days','organization',?,?,?,?,?)`).bind(crypto.randomUUID(),account.user.id,account.organization.id,account.organization.id,requestId,parsed.data.reason,JSON.stringify({until}),now.toISOString())]);return Response.json({deactivatedUntil:until,requestId});}
+import { getAuthenticatedUser } from '@/app/chatgpt-auth';
+import { getD1 } from '@/db';
+import { requestIdFrom } from '@/lib/request-context';
+import { getAccountContext } from '@/modules/identity/service';
+import { z } from 'zod';
+const schema = z.object({
+  confirmation: z.literal('DESATIVAR'),
+  reason: z.string().trim().min(5).max(500),
+});
+export async function POST(request: Request) {
+  const requestId = requestIdFrom(request);
+  const user = await getAuthenticatedUser();
+  if (!user)
+    return Response.json({ error: 'Faça login.', requestId }, { status: 401 });
+  const account = await getAccountContext(user);
+  if (!account || account.organization.type !== 'reseller')
+    return Response.json(
+      { error: 'Acesso exclusivo do revendedor.', requestId },
+      { status: 403 },
+    );
+  const parsed = schema.safeParse(await request.json());
+  if (!parsed.success)
+    return Response.json(
+      { error: 'Digite DESATIVAR e informe o motivo.', requestId },
+      { status: 422 },
+    );
+  const now = new Date();
+  const until = new Date(now.getTime() + 30 * 86400000).toISOString();
+  await getD1().batch([
+    getD1()
+      .prepare(
+        `UPDATE organizations SET status='suspended',updated_at=? WHERE id=?`,
+      )
+      .bind(now.toISOString(), account.organization.id),
+    getD1()
+      .prepare(
+        `UPDATE reseller_profiles SET deactivated_until=?,updated_at=? WHERE organization_id=?`,
+      )
+      .bind(until, now.toISOString(), account.organization.id),
+    getD1()
+      .prepare(
+        `INSERT INTO audit_logs (id,actor_user_id,organization_id,action,entity_type,entity_id,request_id,reason,metadata,created_at) VALUES (?,?,?,'account.deactivated_30_days','organization',?,?,?,?,?)`,
+      )
+      .bind(
+        crypto.randomUUID(),
+        account.user.id,
+        account.organization.id,
+        account.organization.id,
+        requestId,
+        parsed.data.reason,
+        JSON.stringify({ until }),
+        now.toISOString(),
+      ),
+  ]);
+  return Response.json({ deactivatedUntil: until, requestId });
+}

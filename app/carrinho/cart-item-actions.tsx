@@ -8,7 +8,7 @@ export function CartItemActions({
 }: {
   productId: string;
   quantity: number;
-  variantId:string|null;
+  variantId: string | null;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -17,7 +17,11 @@ export function CartItemActions({
     await fetch('/api/cart', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ productId, variantId:variantId??undefined, quantity: next }),
+      body: JSON.stringify({
+        productId,
+        variantId: variantId ?? undefined,
+        quantity: next,
+      }),
     });
     setBusy(false);
     router.refresh();

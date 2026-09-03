@@ -1,6 +1,11 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
-import { BarChart3, CircleDollarSign, PackageCheck, ShoppingCart } from 'lucide-react';
+import {
+  BarChart3,
+  CircleDollarSign,
+  PackageCheck,
+  ShoppingCart,
+} from 'lucide-react';
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
@@ -63,9 +68,16 @@ export default async function ReportsPage({
   return (
     <AppShell account={account} activePath="/relatorios">
       <section className="page-heading">
-        <div><span className="page-kicker"><BarChart3 /> Dados operacionais em tempo real</span>
-        <h1>Relatórios {supplier ? 'do fornecedor' : 'do revendedor'}</h1>
-        <p>Pedidos, volume financeiro, desempenho e produtos atualizados automaticamente.</p></div>
+        <div>
+          <span className="page-kicker">
+            <BarChart3 /> Dados operacionais em tempo real
+          </span>
+          <h1>Relatórios {supplier ? 'do fornecedor' : 'do revendedor'}</h1>
+          <p>
+            Pedidos, volume financeiro, desempenho e produtos atualizados
+            automaticamente.
+          </p>
+        </div>
         <nav className="report-period-filter" aria-label="Período do relatório">
           {[
             ['7d', '7 dias'],
@@ -81,76 +93,87 @@ export default async function ReportsPage({
               {label}
             </a>
           ))}
-        </nav><div className="heading-actions"><a className="secondary-action" href="/api/reports/export?format=xlsx">Exportar XLSX</a><a className="secondary-action" href="/api/reports/export?format=pdf">Exportar PDF</a></div>
+        </nav>
+        <div className="heading-actions">
+          <a
+            className="secondary-action"
+            href="/api/reports/export?format=xlsx"
+          >
+            Exportar XLSX
+          </a>
+          <a className="secondary-action" href="/api/reports/export?format=pdf">
+            Exportar PDF
+          </a>
+        </div>
       </section>
-        <div className="finance-summary">
+      <div className="finance-summary">
+        <article>
+          <ShoppingCart />
+          <small>Pedidos</small>
+          <strong>{summary?.orders ?? 0}</strong>
+        </article>
+        <article>
+          <CircleDollarSign />
+          <small>Volume</small>
+          <strong>
+            {((summary?.volume ?? 0) / 100).toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            })}
+          </strong>
+        </article>
+        <article>
+          <PackageCheck />
+          <small>Ticket médio</small>
+          <strong>
+            {((summary?.average ?? 0) / 100).toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            })}
+          </strong>
+        </article>
+        {reputation && (
           <article>
-            <ShoppingCart />
-            <small>Pedidos</small>
-            <strong>{summary?.orders ?? 0}</strong>
+            <small>Reputação</small>
+            <strong>{(reputation.score / 100).toFixed(1)}%</strong>
+            <span>cálculo explicável</span>
           </article>
-          <article>
-            <CircleDollarSign />
-            <small>Volume</small>
-            <strong>
-              {((summary?.volume ?? 0) / 100).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-            </strong>
-          </article>
-          <article>
-            <PackageCheck />
-            <small>Ticket médio</small>
-            <strong>
-              {((summary?.average ?? 0) / 100).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-            </strong>
-          </article>
-          {reputation && (
-            <article>
-              <small>Reputação</small>
-              <strong>{(reputation.score / 100).toFixed(1)}%</strong>
-              <span>cálculo explicável</span>
-            </article>
+        )}
+      </div>
+      <div className="order-detail-grid">
+        <section>
+          <h2>Canais de origem</h2>
+          {channels.results.length === 0 ? (
+            <p>Sem pedidos.</p>
+          ) : (
+            channels.results.map((row) => (
+              <article key={row.channel}>
+                <strong>{row.channel}</strong>
+                <small>
+                  {row.total} pedido(s) ·{' '}
+                  {(row.volume / 100).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </small>
+              </article>
+            ))
           )}
-        </div>
-        <div className="order-detail-grid">
-          <section>
-            <h2>Canais de origem</h2>
-            {channels.results.length === 0 ? (
-              <p>Sem pedidos.</p>
-            ) : (
-              channels.results.map((row) => (
-                <article key={row.channel}>
-                  <strong>{row.channel}</strong>
-                  <small>
-                    {row.total} pedido(s) ·{' '}
-                    {(row.volume / 100).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
-                  </small>
-                </article>
-              ))
-            )}
-          </section>
-          <section>
-            <h2>Produtos mais utilizados</h2>
-            {topProducts.results.length === 0 ? (
-              <p>Sem giro calculável.</p>
-            ) : (
-              topProducts.results.map((row) => (
-                <article key={row.title}>
-                  <strong>{row.title}</strong>
-                  <small>{row.quantity} unidade(s)</small>
-                </article>
-              ))
-            )}
-          </section>
-        </div>
+        </section>
+        <section>
+          <h2>Produtos mais utilizados</h2>
+          {topProducts.results.length === 0 ? (
+            <p>Sem giro calculável.</p>
+          ) : (
+            topProducts.results.map((row) => (
+              <article key={row.title}>
+                <strong>{row.title}</strong>
+                <small>{row.quantity} unidade(s)</small>
+              </article>
+            ))
+          )}
+        </section>
+      </div>
     </AppShell>
   );
 }

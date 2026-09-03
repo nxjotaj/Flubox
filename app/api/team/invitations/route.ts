@@ -26,9 +26,15 @@ export async function POST(request: Request): Promise<Response> {
         { status: 401 },
       );
     const account = await requireAccountPermission(user, 'organization.manage');
-    if (account.organization.type !== 'supplier' || account.role !== 'supplier_owner')
+    if (
+      account.organization.type !== 'supplier' ||
+      account.role !== 'supplier_owner'
+    )
       return Response.json(
-        { error: 'Somente o proprietário do fornecedor gerencia a equipe.', requestId },
+        {
+          error: 'Somente o proprietário do fornecedor gerencia a equipe.',
+          requestId,
+        },
         { status: 403 },
       );
     const parsed = schema.safeParse(await request.json());
@@ -47,7 +53,10 @@ export async function POST(request: Request): Promise<Response> {
       .first<{ total: number }>();
     if (Number(occupied?.total ?? 0) >= 4)
       return Response.json(
-        { error: 'O fornecedor já utiliza os quatro acessos permitidos.', requestId },
+        {
+          error: 'O fornecedor já utiliza os quatro acessos permitidos.',
+          requestId,
+        },
         { status: 409 },
       );
     const role = parsed.data.role;
@@ -56,11 +65,20 @@ export async function POST(request: Request): Promise<Response> {
         .prepare(
           `SELECT 1 FROM organization_members m JOIN roles r ON r.id=m.role_id WHERE m.organization_id=? AND m.status='active' AND r.key=? UNION ALL SELECT 1 FROM organization_invitations i JOIN roles r ON r.id=i.role_id WHERE i.organization_id=? AND i.status='pending' AND i.expires_at>? AND r.key=? LIMIT 1`,
         )
-        .bind(account.organization.id, role, account.organization.id, now.toISOString(), role)
+        .bind(
+          account.organization.id,
+          role,
+          account.organization.id,
+          now.toISOString(),
+          role,
+        )
         .first();
       if (roleTaken)
         return Response.json(
-          { error: 'Esta posição de operador já está ocupada ou convidada.', requestId },
+          {
+            error: 'Esta posição de operador já está ocupada ou convidada.',
+            requestId,
+          },
           { status: 409 },
         );
     }

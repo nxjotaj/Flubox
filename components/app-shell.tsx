@@ -1,6 +1,6 @@
-import { BrandLogo } from "@/components/brand-logo";
-import type { AccountContext } from "@/modules/identity/service";
-import { signOutPath } from "@/app/chatgpt-auth";
+import { BrandLogo } from '@/components/brand-logo';
+import type { AccountContext } from '@/modules/identity/service';
+import { signOutPath } from '@/app/chatgpt-auth';
 import {
   BarChart3,
   Bell,
@@ -23,60 +23,60 @@ import {
   Users,
   Warehouse,
   CreditCard,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { getD1 } from "@/db";
-import { OrganizationSwitcher } from "@/app/components/organization-switcher";
-import { AppNavigationTools } from "@/components/app-navigation-tools";
-import { LiveDataRefresh } from "@/components/live-data-refresh";
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { getD1 } from '@/db';
+import { OrganizationSwitcher } from '@/app/components/organization-switcher';
+import { AppNavigationTools } from '@/components/app-navigation-tools';
+import { LiveDataRefresh } from '@/components/live-data-refresh';
 import {
   roleAllows,
   type PermissionKey,
   type RoleKey,
-} from "@/modules/identity/permissions";
+} from '@/modules/identity/permissions';
 
 type NavigationItem = [href: string, label: string, icon: LucideIcon];
 
 const supplierNavigation: NavigationItem[] = [
-  ["/dashboard", "Visão geral", LayoutDashboard],
-  ["/produtos", "Produtos", Package],
-  ["/estoque", "Estoque", Warehouse],
-  ["/pedidos", "Pedidos", ClipboardList],
-  ["/envios", "Envios", Truck],
-  ["/financeiro", "Financeiro", CircleDollarSign],
-  ["/relatorios", "Relatórios", BarChart3],
-  ["/casos", "Pós-venda", CircleHelp],
-  ["/mensagens", "Mensagens", MessageSquare],
-  ["/equipe", "Equipe", Users],
-  ["/assinatura", "Assinatura", CreditCard],
+  ['/dashboard', 'Visão geral', LayoutDashboard],
+  ['/produtos', 'Produtos', Package],
+  ['/estoque', 'Estoque', Warehouse],
+  ['/pedidos', 'Pedidos', ClipboardList],
+  ['/envios', 'Envios', Truck],
+  ['/financeiro', 'Financeiro', CircleDollarSign],
+  ['/relatorios', 'Relatórios', BarChart3],
+  ['/casos', 'Pós-venda', CircleHelp],
+  ['/mensagens', 'Mensagens', MessageSquare],
+  ['/equipe', 'Equipe', Users],
+  ['/assinatura', 'Assinatura', CreditCard],
 ];
 
 const resellerNavigation: NavigationItem[] = [
-  ["/dashboard", "Visão geral", LayoutDashboard],
-  ["/fornecedores", "Fornecedores", Building2],
-  ["/catalogo", "Todos os produtos", ShoppingBag],
-  ["/carrinho", "Carrinho", ShoppingBag],
-  ["/favoritos", "Favoritos", Heart],
-  ["/listas", "Minha vitrine", Boxes],
-  ["/pedidos", "Pedidos", ClipboardList],
-  ["/rastreamento", "Rastreamento", Truck],
-  ["/financeiro", "Créditos e pagamentos", CircleDollarSign],
-  ["/casos", "Pós-venda", CircleHelp],
-  ["/mensagens", "Mensagens", MessageSquare],
+  ['/dashboard', 'Visão geral', LayoutDashboard],
+  ['/fornecedores', 'Fornecedores', Building2],
+  ['/catalogo', 'Todos os produtos', ShoppingBag],
+  ['/carrinho', 'Carrinho', ShoppingBag],
+  ['/favoritos', 'Favoritos', Heart],
+  ['/listas', 'Minha vitrine', Boxes],
+  ['/pedidos', 'Pedidos', ClipboardList],
+  ['/rastreamento', 'Rastreamento', Truck],
+  ['/financeiro', 'Créditos e pagamentos', CircleDollarSign],
+  ['/casos', 'Pós-venda', CircleHelp],
+  ['/mensagens', 'Mensagens', MessageSquare],
 ];
 
 const adminNavigation: NavigationItem[] = [
-  ["/admin", "Visão geral", Gauge],
-  ["/admin/fornecedores", "Fornecedores", Building2],
-  ["/admin/revendedores", "Revendedores", ShoppingBag],
-  ["/admin/usuarios", "Usuários e acessos", Users],
-  ["/admin/catalogo", "Catálogo e moderação", Package],
-  ["/admin/pedidos", "Pedidos", ClipboardList],
-  ["/admin/financeiro", "Financeiro e ledger", CircleDollarSign],
-  ["/admin/disputas", "Disputas", ShieldCheck],
-  ["/admin/relatorios", "Relatórios", BarChart3],
-  ["/admin/auditoria", "Auditoria", FileText],
+  ['/admin', 'Visão geral', Gauge],
+  ['/admin/fornecedores', 'Fornecedores', Building2],
+  ['/admin/revendedores', 'Revendedores', ShoppingBag],
+  ['/admin/usuarios', 'Usuários e acessos', Users],
+  ['/admin/catalogo', 'Catálogo e moderação', Package],
+  ['/admin/pedidos', 'Pedidos', ClipboardList],
+  ['/admin/financeiro', 'Financeiro e ledger', CircleDollarSign],
+  ['/admin/disputas', 'Disputas', ShieldCheck],
+  ['/admin/relatorios', 'Relatórios', BarChart3],
+  ['/admin/auditoria', 'Auditoria', FileText],
 ];
 
 export async function AppShell({
@@ -88,16 +88,16 @@ export async function AppShell({
   activePath: string;
   children: React.ReactNode;
 }) {
-  const isAdmin = account.organization.type === "platform";
+  const isAdmin = account.organization.type === 'platform';
   let navigation = isAdmin
     ? adminNavigation
-    : account.organization.type === "supplier"
+    : account.organization.type === 'supplier'
       ? supplierNavigation
       : resellerNavigation;
-  if (account.organization.type === "supplier") {
-    if (account.role.startsWith("supplier_operator_")) {
-      navigation = supplierNavigation.filter(([href]) => href === "/envios");
-    } else if (account.role === "supplier_member") {
+  if (account.organization.type === 'supplier') {
+    if (account.role.startsWith('supplier_operator_')) {
+      navigation = supplierNavigation.filter(([href]) => href === '/envios');
+    } else if (account.role === 'supplier_member') {
       const result = await getD1()
         .prepare(
           `SELECT permission_key permissionKey,allowed FROM member_permission_overrides WHERE member_id=?`,
@@ -108,17 +108,17 @@ export async function AppShell({
         result.results.map((row) => [row.permissionKey, row.allowed]),
       );
       const pathPermission: Record<string, PermissionKey> = {
-        "/dashboard": "organization.view",
-        "/produtos": "products.view",
-        "/estoque": "products.manage",
-        "/pedidos": "orders.view",
-        "/envios": "fulfillment.view",
-        "/financeiro": "payments.view",
-        "/relatorios": "audit.view",
-        "/casos": "orders.view",
-        "/mensagens": "orders.view",
-        "/equipe": "organization.manage",
-        "/assinatura": "organization.manage",
+        '/dashboard': 'organization.view',
+        '/produtos': 'products.view',
+        '/estoque': 'products.manage',
+        '/pedidos': 'orders.view',
+        '/envios': 'fulfillment.view',
+        '/financeiro': 'payments.view',
+        '/relatorios': 'audit.view',
+        '/casos': 'orders.view',
+        '/mensagens': 'orders.view',
+        '/equipe': 'organization.manage',
+        '/assinatura': 'organization.manage',
       };
       navigation = supplierNavigation.filter(([href]) => {
         const permission = pathPermission[href];
@@ -139,16 +139,16 @@ export async function AppShell({
     navigation.find(
       ([href]) =>
         activePath === href ||
-        (href !== "/admin" && activePath.startsWith(`${href}/`)),
-    )?.[1] ?? "Central operacional";
+        (href !== '/admin' && activePath.startsWith(`${href}/`)),
+    )?.[1] ?? 'Central operacional';
   const accountType = isAdmin
-    ? "Administração Flubox"
-    : account.organization.type === "supplier"
-      ? "Operação do fornecedor"
-      : "Operação do revendedor";
+    ? 'Administração Flubox'
+    : account.organization.type === 'supplier'
+      ? 'Operação do fornecedor'
+      : 'Operação do revendedor';
   if (
-    account.organization.type === "reseller" &&
-    account.organization.status === "suspended"
+    account.organization.type === 'reseller' &&
+    account.organization.status === 'suspended'
   ) {
     return (
       <main className="suspended-account-screen">
@@ -161,7 +161,7 @@ export async function AppShell({
             solicitado na configuração da conta. A reativação acontece
             automaticamente ao final do prazo.
           </p>
-          <a className="primary-action" href={signOutPath("/")}>
+          <a className="primary-action" href={signOutPath('/')}>
             Sair com segurança
           </a>
         </section>
@@ -174,7 +174,7 @@ export async function AppShell({
       <aside className="app-sidebar">
         <Link
           className="app-brand"
-          href={isAdmin ? "/admin" : "/dashboard"}
+          href={isAdmin ? '/admin' : '/dashboard'}
           prefetch
         >
           <BrandLogo compact />
@@ -185,10 +185,10 @@ export async function AppShell({
             <strong>{account.organization.displayName}</strong>
             <small>
               {isAdmin
-                ? "Operação Flubox"
-                : account.organization.type === "supplier"
-                  ? "Fornecedor"
-                  : "Revendedor"}
+                ? 'Operação Flubox'
+                : account.organization.type === 'supplier'
+                  ? 'Fornecedor'
+                  : 'Revendedor'}
             </small>
           </div>
         </div>
@@ -207,9 +207,9 @@ export async function AppShell({
               aria-label={label}
               className={
                 activePath === href ||
-                (href !== "/admin" && activePath.startsWith(`${href}/`))
-                  ? "active"
-                  : ""
+                (href !== '/admin' && activePath.startsWith(`${href}/`))
+                  ? 'active'
+                  : ''
               }
             >
               <Icon /> <span>{label}</span>
@@ -220,7 +220,7 @@ export async function AppShell({
           <Link href="/configuracoes" prefetch>
             <Settings /> <span>Configurações</span>
           </Link>
-          <a href={signOutPath("/")}>
+          <a href={signOutPath('/')}>
             <LogOut /> <span>Sair</span>
           </a>
         </div>
@@ -255,7 +255,7 @@ export async function AppShell({
             </span>
             <div>
               <strong>{account.user.name ?? account.user.email}</strong>
-              <small>{account.role.replaceAll("_", " ")}</small>
+              <small>{account.role.replaceAll('_', ' ')}</small>
             </div>
           </div>
         </header>

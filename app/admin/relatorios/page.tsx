@@ -79,10 +79,21 @@ export default async function AdminReportsPage() {
             Visões independentes de vendas, receita, pedidos, catálogo e contas.
           </p>
         </div>
-        <div className="heading-actions"><a className="secondary-action" href="/api/reports/export?format=xlsx">Exportar XLSX</a><a className="secondary-action" href="/api/reports/export?format=pdf">Exportar PDF</a><ExportTableButton
-          selector="#monthly-report"
-          filename="flubox-relatorio-mensal.csv"
-        /></div>
+        <div className="heading-actions">
+          <a
+            className="secondary-action"
+            href="/api/reports/export?format=xlsx"
+          >
+            Exportar XLSX
+          </a>
+          <a className="secondary-action" href="/api/reports/export?format=pdf">
+            Exportar PDF
+          </a>
+          <ExportTableButton
+            selector="#monthly-report"
+            filename="flubox-relatorio-mensal.csv"
+          />
+        </div>
       </section>
       <section className="metric-grid report-metrics">
         {cards.map(([label, value, Icon]) => (

@@ -42,11 +42,21 @@ export async function createPrivateDocumentUrl(key: string): Promise<string> {
   return data.signedUrl;
 }
 
-export async function downloadPrivateDocument(key: string): Promise<ArrayBuffer> {
+export async function downloadPrivateDocument(
+  key: string,
+): Promise<ArrayBuffer> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.storage.from('flubox-files').download(key);
+  const { data, error } = await supabase.storage
+    .from('flubox-files')
+    .download(key);
   if (error || !data)
-    throw new Error(`STORAGE_DOWNLOAD_UNAVAILABLE: ${error?.message ?? 'Arquivo ausente'}`);
+    throw new Error(
+      `STORAGE_DOWNLOAD_UNAVAILABLE: ${error?.message ?? 'Arquivo ausente'}`,
+    );
   return data.arrayBuffer();
 }
-export async function removePrivateDocument(key:string):Promise<void>{const supabase=await createSupabaseServerClient();const {error}=await supabase.storage.from('flubox-files').remove([key]);if(error)throw new Error(`STORAGE_REMOVE_UNAVAILABLE: ${error.message}`)}
+export async function removePrivateDocument(key: string): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.storage.from('flubox-files').remove([key]);
+  if (error) throw new Error(`STORAGE_REMOVE_UNAVAILABLE: ${error.message}`);
+}

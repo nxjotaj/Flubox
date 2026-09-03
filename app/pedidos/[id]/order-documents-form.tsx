@@ -59,11 +59,21 @@ function UploadForm({
         <>
           <label>
             Quantas unidades esta etiqueta cobre?
-            <input name="quantityCovered" type="number" min="1" max={remainingUnits} defaultValue="1" required />
+            <input
+              name="quantityCovered"
+              type="number"
+              min="1"
+              max={remainingUnits}
+              defaultValue="1"
+              required
+            />
           </label>
           <label>
             Código de barras da etiqueta
-            <input name="barcodeValue" placeholder="Opcional: usado na baixa por leitor" />
+            <input
+              name="barcodeValue"
+              placeholder="Opcional: usado na baixa por leitor"
+            />
           </label>
         </>
       )}

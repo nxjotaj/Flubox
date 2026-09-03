@@ -67,7 +67,8 @@ export async function POST(
     const type = typeof rawType === 'string' ? rawType : '';
     const quantityCovered = Number(form.get('quantityCovered') ?? 1);
     const rawBarcode = form.get('barcodeValue');
-    const barcodeValue = typeof rawBarcode === 'string' ? rawBarcode.trim() : '';
+    const barcodeValue =
+      typeof rawBarcode === 'string' ? rawBarcode.trim() : '';
     if (
       !(file instanceof File) ||
       !types.has(type) ||

@@ -74,25 +74,40 @@ export default async function SuppliersDirectory({
     <AppShell account={account} activePath="/fornecedores">
       <section className="page-heading marketplace-heading">
         <div>
-          <span className="page-kicker"><PackageSearch /> Central de fornecedores</span>
+          <span className="page-kicker">
+            <PackageSearch /> Central de fornecedores
+          </span>
           <h1>Encontre produtos para vender</h1>
-          <p>Pesquise o produto e descubra imediatamente quais fornecedores possuem estoque, preço e reputação adequados.</p>
+          <p>
+            Pesquise o produto e descubra imediatamente quais fornecedores
+            possuem estoque, preço e reputação adequados.
+          </p>
         </div>
       </section>
       <form className="supplier-search-panel">
         <label>
           <span>Produto, marca, SKU ou fornecedor</span>
-          <input name="q" defaultValue={query} placeholder="Ex.: garrafa térmica, Órbita, ORB-GAR…" />
+          <input
+            name="q"
+            defaultValue={query}
+            placeholder="Ex.: garrafa térmica, Órbita, ORB-GAR…"
+          />
         </label>
         <label>
           <span>Categoria</span>
           <select name="categoria" defaultValue={category}>
             <option value="">Todas as categorias</option>
-            {categories.results.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            {categories.results.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
           </select>
         </label>
         <button>Buscar fornecedores</button>
-        {(query || category) && <Link href="/fornecedores">Limpar filtros</Link>}
+        {(query || category) && (
+          <Link href="/fornecedores">Limpar filtros</Link>
+        )}
       </form>
       <div className="directory-result-bar">
         <strong>{suppliers.results.length} fornecedores encontrados</strong>
@@ -102,21 +117,47 @@ export default async function SuppliersDirectory({
         {suppliers.results.map((supplier) => (
           <article className="supplier-directory-card" key={supplier.id}>
             <header>
-              <span className="supplier-monogram"><Building2 /></span>
+              <span className="supplier-monogram">
+                <Building2 />
+              </span>
               <div>
                 <h2>{supplier.displayName}</h2>
-                <p><Star /> {(supplier.reputation / 100).toFixed(1)}% de reputação</p>
+                <p>
+                  <Star /> {(supplier.reputation / 100).toFixed(1)}% de
+                  reputação
+                </p>
               </div>
             </header>
-            <p className="supplier-categories">{supplier.categories ?? 'Catálogo geral'}</p>
+            <p className="supplier-categories">
+              {supplier.categories ?? 'Catálogo geral'}
+            </p>
             <dl>
-              <div><dt>Produtos ativos</dt><dd>{supplier.productCount}</dd></div>
-              <div><dt>A partir de</dt><dd>{(supplier.minPrice / 100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</dd></div>
-              <div><dt>Revendedores seguindo</dt><dd>{supplier.followerCount}</dd></div>
+              <div>
+                <dt>Produtos ativos</dt>
+                <dd>{supplier.productCount}</dd>
+              </div>
+              <div>
+                <dt>A partir de</dt>
+                <dd>
+                  {(supplier.minPrice / 100).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </dd>
+              </div>
+              <div>
+                <dt>Revendedores seguindo</dt>
+                <dd>{supplier.followerCount}</dd>
+              </div>
             </dl>
             <footer>
-              <FollowSupplierButton supplierId={supplier.id} initial={Boolean(supplier.following)} />
-              <Link href={`/fornecedores/${supplier.id}`}>Ver catálogo <ArrowRight /></Link>
+              <FollowSupplierButton
+                supplierId={supplier.id}
+                initial={Boolean(supplier.following)}
+              />
+              <Link href={`/fornecedores/${supplier.id}`}>
+                Ver catálogo <ArrowRight />
+              </Link>
             </footer>
           </article>
         ))}

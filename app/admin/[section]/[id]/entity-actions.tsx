@@ -66,7 +66,29 @@ export function EntityActions({
           </small>
         )}
         {message && <output>{message}</output>}
-        {status !== 'archived' && <button disabled={busy} className="danger" onClick={()=>{const reason=window.prompt('Justificativa para arquivar esta organização');if(reason&&window.confirm('Arquivar a organização e ocultá-la da operação?'))void send(`/api/admin/organizations/${id}/status`,{status:'archived',reason})}}>Arquivar organização</button>}
+        {status !== 'archived' && (
+          <button
+            disabled={busy}
+            className="danger"
+            onClick={() => {
+              const reason = window.prompt(
+                'Justificativa para arquivar esta organização',
+              );
+              if (
+                reason &&
+                window.confirm(
+                  'Arquivar a organização e ocultá-la da operação?',
+                )
+              )
+                void send(`/api/admin/organizations/${id}/status`, {
+                  status: 'archived',
+                  reason,
+                });
+            }}
+          >
+            Arquivar organização
+          </button>
+        )}
       </div>
     );
   }
@@ -109,12 +131,28 @@ export function EntityActions({
           disabled={busy}
           className="danger"
           onClick={() => {
-            const amount = window.prompt('Valor do reembolso em reais (ex.: 149,90)');
+            const amount = window.prompt(
+              'Valor do reembolso em reais (ex.: 149,90)',
+            );
             if (!amount) return;
-            const reason = window.prompt('Justificativa detalhada do reembolso');
-            const amountCents = Math.round(Number(amount.replace(',', '.')) * 100);
-            if (reason && Number.isInteger(amountCents) && amountCents > 0 && window.confirm(`Confirmar reembolso de R$ ${amount.replace('.', ',')}?`))
-              void send(`/api/admin/cases/${id}/refund`, { amountCents, reason });
+            const reason = window.prompt(
+              'Justificativa detalhada do reembolso',
+            );
+            const amountCents = Math.round(
+              Number(amount.replace(',', '.')) * 100,
+            );
+            if (
+              reason &&
+              Number.isInteger(amountCents) &&
+              amountCents > 0 &&
+              window.confirm(
+                `Confirmar reembolso de R$ ${amount.replace('.', ',')}?`,
+              )
+            )
+              void send(`/api/admin/cases/${id}/refund`, {
+                amountCents,
+                reason,
+              });
           }}
         >
           Determinar reembolso

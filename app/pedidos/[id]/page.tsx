@@ -1,14 +1,14 @@
-import { requireAuthenticatedUser } from "@/app/chatgpt-auth";
-import { BrandLogo } from "@/components/brand-logo";
-import { getD1 } from "@/db";
-import { getAccountContext } from "@/modules/identity/service";
-import { getSlaStatus } from "@/modules/logistics/sla";
-import { notFound, redirect } from "next/navigation";
-import { LogisticsActions } from "./logistics-actions";
-import { PaymentPanel } from "./payment-panel";
-import { OrderDocumentsForm } from "./order-documents-form";
-import { AdminOrderControls } from "./admin-order-controls";
-export const dynamic = "force-dynamic";
+import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
+import { BrandLogo } from '@/components/brand-logo';
+import { getD1 } from '@/db';
+import { getAccountContext } from '@/modules/identity/service';
+import { getSlaStatus } from '@/modules/logistics/sla';
+import { notFound, redirect } from 'next/navigation';
+import { LogisticsActions } from './logistics-actions';
+import { PaymentPanel } from './payment-panel';
+import { OrderDocumentsForm } from './order-documents-form';
+import { AdminOrderControls } from './admin-order-controls';
+export const dynamic = 'force-dynamic';
 export default async function OrderDetail({
   params,
 }: {
@@ -17,14 +17,14 @@ export default async function OrderDetail({
   const { id } = await params;
   const user = await requireAuthenticatedUser(`/pedidos/${id}`);
   const account = await getAccountContext(user);
-  if (!account) redirect("/cadastro");
+  if (!account) redirect('/cadastro');
   const order = await getD1()
     .prepare(
       `SELECT o.id,o.number,o.status,o.total_cents totalCents,o.channel,o.created_at createdAt,o.reseller_organization_id resellerId,o.supplier_organization_id supplierId,o.recipient_snapshot recipientSnapshot,o.address_snapshot addressSnapshot,o.notes,sup.display_name supplierName,res.display_name resellerName,s.carrier,s.tracking_code trackingCode,s.preparation_deadline deadline,s.status shipmentStatus,pi.pix_copy_paste pixCopyPaste,pi.expires_at paymentExpiresAt,pi.provider paymentProvider FROM orders o JOIN organizations sup ON sup.id=o.supplier_organization_id JOIN organizations res ON res.id=o.reseller_organization_id LEFT JOIN shipments s ON s.order_id=o.id LEFT JOIN payment_intents pi ON pi.order_id=o.id WHERE o.id=? AND (?=TRUE OR o.reseller_organization_id=? OR o.supplier_organization_id=?)`,
     )
     .bind(
       id,
-      account.organization.type === "platform",
+      account.organization.type === 'platform',
       account.organization.id,
       account.organization.id,
     )
@@ -97,17 +97,17 @@ export default async function OrderDetail({
   ]);
   const isReseller = account.organization.id === order.resellerId;
   const hasLabel = documents.results.some(
-    (document) => document.type === "shipping_label",
+    (document) => document.type === 'shipping_label',
   );
   const totalUnits = items.results.reduce(
     (sum, item) => sum + Number(item.quantity),
     0,
   );
   const coveredUnits = documents.results
-    .filter((document) => document.type === "shipping_label")
+    .filter((document) => document.type === 'shipping_label')
     .reduce((sum, document) => sum + Number(document.quantityCovered), 0);
   const hasFiscal = documents.results.some((document) =>
-    ["nfe_danfe", "content_declaration"].includes(document.type),
+    ['nfe_danfe', 'content_declaration'].includes(document.type),
   );
   const recipient = JSON.parse(order.recipientSnapshot) as Record<
     string,
@@ -126,22 +126,22 @@ export default async function OrderDetail({
         <span className="eyebrow">{order.status}</span>
         <h1>{order.number}</h1>
         <p>
-          {order.channel} ·{" "}
-          {(order.totalCents / 100).toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
+          {order.channel} ·{' '}
+          {(order.totalCents / 100).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
           })}
         </p>
-        {isReseller && order.status === "awaiting_payment" && (
+        {isReseller && order.status === 'awaiting_payment' && (
           <PaymentPanel
             orderId={id}
             copyPaste={order.pixCopyPaste}
             expiresAt={order.paymentExpiresAt}
-            development={order.paymentProvider === "development"}
+            development={order.paymentProvider === 'development'}
           />
         )}
         {isReseller &&
-          ["awaiting_payment", "paid_awaiting_documents"].includes(
+          ['awaiting_payment', 'paid_awaiting_documents'].includes(
             order.status,
           ) && (
             <OrderDocumentsForm
@@ -164,25 +164,25 @@ export default async function OrderDetail({
                   rel="noreferrer"
                 >
                   <strong>
-                    {document.type === "shipping_label"
-                      ? "Etiqueta de envio"
-                      : document.type === "nfe_danfe"
-                        ? "NF-e / DANFE"
-                        : "Declaração de conteúdo"}
+                    {document.type === 'shipping_label'
+                      ? 'Etiqueta de envio'
+                      : document.type === 'nfe_danfe'
+                        ? 'NF-e / DANFE'
+                        : 'Declaração de conteúdo'}
                   </strong>
                   <small>
                     {document.fileName}
-                    {document.type === "shipping_label"
-                      ? ` · cobre ${document.quantityCovered} un.${document.barcodeValue ? ` · código ${document.barcodeValue}` : ""}`
-                      : ""}{" "}
-                    · {new Date(document.createdAt).toLocaleString("pt-BR")}
+                    {document.type === 'shipping_label'
+                      ? ` · cobre ${document.quantityCovered} un.${document.barcodeValue ? ` · código ${document.barcodeValue}` : ''}`
+                      : ''}{' '}
+                    · {new Date(document.createdAt).toLocaleString('pt-BR')}
                   </small>
                 </a>
               ))}
             </div>
           </section>
         )}
-        {!isReseller && order.status === "paid_awaiting_documents" && (
+        {!isReseller && order.status === 'paid_awaiting_documents' && (
           <section className="order-operation-card">
             <h2>Aguardando documentos do revendedor</h2>
             <p>
@@ -191,10 +191,10 @@ export default async function OrderDetail({
             </p>
           </section>
         )}
-        {account.organization.type === "supplier" && (
+        {account.organization.type === 'supplier' && (
           <LogisticsActions orderId={id} status={order.status} />
         )}
-        {account.organization.type === "platform" && (
+        {account.organization.type === 'platform' && (
           <AdminOrderControls orderId={id} status={order.status} />
         )}
         <div className="order-detail-grid">
@@ -211,10 +211,10 @@ export default async function OrderDetail({
                     {item.quantity}× {snapshot.title}
                   </strong>
                   <small>
-                    {snapshot.sku} ·{" "}
-                    {(item.unitPrice / 100).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
+                    {snapshot.sku} ·{' '}
+                    {(item.unitPrice / 100).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
                     })}
                   </small>
                 </article>
@@ -235,8 +235,8 @@ export default async function OrderDetail({
             </article>
             <p>
               {address.street}, {address.number}
-              {address.complement ? ` · ${address.complement}` : ""} ·{" "}
-              {address.district} · {address.city}/{address.state} ·{" "}
+              {address.complement ? ` · ${address.complement}` : ''} ·{' '}
+              {address.district} · {address.city}/{address.state} ·{' '}
               {address.postalCode}
             </p>
             {order.notes && (
@@ -249,7 +249,7 @@ export default async function OrderDetail({
             <h2>Envio</h2>
             {order.deadline ? (
               <>
-                <p>Prazo: {new Date(order.deadline).toLocaleString("pt-BR")}</p>
+                <p>Prazo: {new Date(order.deadline).toLocaleString('pt-BR')}</p>
                 <b>{getSlaStatus(order.deadline, new Date().toISOString())}</b>
                 <p>
                   {order.carrier} {order.trackingCode}
@@ -264,7 +264,7 @@ export default async function OrderDetail({
           <h2>Timeline</h2>
           {tracking.results.map((event, index) => (
             <article key={`t${index}`}>
-              <time>{new Date(event.occurredAt).toLocaleString("pt-BR")}</time>
+              <time>{new Date(event.occurredAt).toLocaleString('pt-BR')}</time>
               <div>
                 <strong>{event.description}</strong>
                 <small>{event.location ?? event.status}</small>
@@ -273,11 +273,11 @@ export default async function OrderDetail({
           ))}
           {events.results.map((event, index) => (
             <article key={`e${index}`}>
-              <time>{new Date(event.createdAt).toLocaleString("pt-BR")}</time>
+              <time>{new Date(event.createdAt).toLocaleString('pt-BR')}</time>
               <div>
                 <strong>{event.type}</strong>
                 <small>
-                  {event.fromStatus ?? "início"} → {event.toStatus ?? "evento"}
+                  {event.fromStatus ?? 'início'} → {event.toStatus ?? 'evento'}
                 </small>
               </div>
             </article>

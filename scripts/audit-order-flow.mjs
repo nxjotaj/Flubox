@@ -57,7 +57,8 @@ const [product] = await sql`
   AND COALESCE((SELECT SUM(quantity) FROM inventory_movements WHERE product_id=p.id),0)>0
   ORDER BY p.created_at LIMIT 1`;
 if (!product) throw new Error('Produto elegível ausente.');
-const [resellerOrg]=await sql`SELECT o.id,u.id user_id FROM organizations o JOIN organization_members m ON m.organization_id=o.id JOIN users u ON u.id=m.user_id WHERE u.email='revendedor@flubox.com.br' AND o.type='reseller' LIMIT 1`;
+const [resellerOrg] =
+  await sql`SELECT o.id,u.id user_id FROM organizations o JOIN organization_members m ON m.organization_id=o.id JOIN users u ON u.id=m.user_id WHERE u.email='revendedor@flubox.com.br' AND o.type='reseller' LIMIT 1`;
 await sql`INSERT INTO product_favorites (organization_id,product_id,created_by,created_at) VALUES (${resellerOrg.id},${product.id},${resellerOrg.user_id},NOW()) ON CONFLICT (organization_id,product_id) DO NOTHING`;
 
 let [order] =
@@ -70,7 +71,13 @@ order ??= await request(
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      items: [{ productId: product.id, variantId: product.variant_id ?? undefined, quantity: 1 }],
+      items: [
+        {
+          productId: product.id,
+          variantId: product.variant_id ?? undefined,
+          quantity: 1,
+        },
+      ],
       channel: 'auditoria_e2e',
       externalReference: `E2E-${Date.now()}`,
       recipient: {
@@ -108,8 +115,9 @@ for (const [type, label] of [
   ['shipping_label', 'enviar etiqueta'],
   ['content_declaration', 'enviar declaração fiscal'],
 ]) {
-  const [existingDocument]=await sql`SELECT id FROM order_documents WHERE order_id=${order.id} AND type=${type} LIMIT 1`;
-  if(existingDocument && type==='shipping_label') continue;
+  const [existingDocument] =
+    await sql`SELECT id FROM order_documents WHERE order_id=${order.id} AND type=${type} LIMIT 1`;
+  if (existingDocument && type === 'shipping_label') continue;
   const form = new FormData();
   form.set('type', type);
   form.set('issuer', 'Auditoria Flubox');

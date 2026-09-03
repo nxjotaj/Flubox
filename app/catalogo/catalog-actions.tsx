@@ -26,7 +26,13 @@ export function FavoriteButton({
   );
 }
 
-export function AddToCartButton({ productId,variantId }: { productId: string;variantId?:string }) {
+export function AddToCartButton({
+  productId,
+  variantId,
+}: {
+  productId: string;
+  variantId?: string;
+}) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   async function add() {
@@ -34,7 +40,7 @@ export function AddToCartButton({ productId,variantId }: { productId: string;var
     const response = await fetch('/api/cart', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ productId,variantId, quantity: 1 }),
+      body: JSON.stringify({ productId, variantId, quantity: 1 }),
     });
     const result = (await response.json()) as { error?: string };
     setBusy(false);

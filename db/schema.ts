@@ -34,7 +34,9 @@ export const organizations = pgTable(
     }).notNull(),
     legalName: text('legal_name').notNull(),
     displayName: text('display_name').notNull(),
-    status: text('status', { enum: ['onboarding', 'active', 'suspended', 'archived'] })
+    status: text('status', {
+      enum: ['onboarding', 'active', 'suspended', 'archived'],
+    })
       .notNull()
       .default('onboarding'),
     administrativeNotes: text('administrative_notes'),
@@ -461,8 +463,14 @@ export const productVariants = pgTable(
     updatedAt: text('updated_at').notNull(),
   },
   (table) => [
-    uniqueIndex('idx_product_variants_product_sku').on(table.productId, table.sku),
-    index('idx_product_variants_product_status').on(table.productId, table.status),
+    uniqueIndex('idx_product_variants_product_sku').on(
+      table.productId,
+      table.sku,
+    ),
+    index('idx_product_variants_product_status').on(
+      table.productId,
+      table.status,
+    ),
   ],
 );
 export const supplierOffers = pgTable('supplier_offers', {

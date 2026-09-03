@@ -81,9 +81,12 @@ export async function POST(
       .bind(id, id)
       .first<{ covered: number; fiscal: number; totalUnits: number }>();
     const documentsComplete =
-      Number(documentCoverage?.covered ?? 0) >= Number(documentCoverage?.totalUnits ?? 0) &&
+      Number(documentCoverage?.covered ?? 0) >=
+        Number(documentCoverage?.totalUnits ?? 0) &&
       Number(documentCoverage?.fiscal ?? 0) > 0;
-    const nextStatus = documentsComplete ? 'ready_for_supplier' : 'paid_awaiting_documents';
+    const nextStatus = documentsComplete
+      ? 'ready_for_supplier'
+      : 'paid_awaiting_documents';
     const items = await getD1()
       .prepare(
         `SELECT product_id productId,variant_id variantId,quantity FROM order_items WHERE order_id=?`,
@@ -178,11 +181,16 @@ export async function POST(
             .prepare(
               `INSERT INTO notifications (id,user_id,organization_id,type,title,body,entity_type,entity_id,created_at) VALUES (?,?,?,'order.ready','Novo pedido liberado','Pagamento e documentos confirmados. O prazo de postagem é de 1 dia útil.','order',?,?)`,
             )
-            .bind(crypto.randomUUID(), supplierUser.id, order.supplierId, id, now),
+            .bind(
+              crypto.randomUUID(),
+              supplierUser.id,
+              order.supplierId,
+              id,
+              now,
+            ),
         );
     }
-    for (const item of items.results)
-    {
+    for (const item of items.results) {
       statements.push(
         getD1()
           .prepare(
@@ -198,7 +206,14 @@ export async function POST(
             now,
           ),
       );
-      if(item.variantId) statements.push(getD1().prepare(`UPDATE product_variants SET stock=GREATEST(0,stock-?),updated_at=? WHERE id=?`).bind(item.quantity,now,item.variantId));
+      if (item.variantId)
+        statements.push(
+          getD1()
+            .prepare(
+              `UPDATE product_variants SET stock=GREATEST(0,stock-?),updated_at=? WHERE id=?`,
+            )
+            .bind(item.quantity, now, item.variantId),
+        );
     }
     await getD1().batch(statements);
     return Response.json({

@@ -1,19 +1,19 @@
-import { requireAuthenticatedUser } from "@/app/chatgpt-auth";
-import { AppShell } from "@/components/app-shell";
-import { getAccountContext } from "@/modules/identity/service";
-import { redirect } from "next/navigation";
-import { PrivacyForm } from "./privacy-form";
-import { AdminSettingsForm } from "./admin-settings-form";
-import { getD1 } from "@/db";
-import { AccountProfileForm } from "./account-profile-form";
-export const dynamic = "force-dynamic";
+import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
+import { AppShell } from '@/components/app-shell';
+import { getAccountContext } from '@/modules/identity/service';
+import { redirect } from 'next/navigation';
+import { PrivacyForm } from './privacy-form';
+import { AdminSettingsForm } from './admin-settings-form';
+import { getD1 } from '@/db';
+import { AccountProfileForm } from './account-profile-form';
+export const dynamic = 'force-dynamic';
 export default async function SettingsPage() {
-  const user = await requireAuthenticatedUser("/configuracoes");
+  const user = await requireAuthenticatedUser('/configuracoes');
   const account = await getAccountContext(user);
-  if (!account) redirect("/cadastro");
-  if (account.organization.type === "platform") {
+  if (!account) redirect('/cadastro');
+  if (account.organization.type === 'platform') {
     const settings = await getD1()
-      .prepare("SELECT key,value FROM system_settings ORDER BY key")
+      .prepare('SELECT key,value FROM system_settings ORDER BY key')
       .all<{ key: string; value: string }>();
     return (
       <AppShell account={account} activePath="/configuracoes">
@@ -35,7 +35,7 @@ export default async function SettingsPage() {
       </AppShell>
     );
   }
-  if (account.organization.type === "reseller") {
+  if (account.organization.type === 'reseller') {
     const profile = await getD1()
       .prepare(
         `SELECT COALESCE(u.name,r.full_name) name,u.email,r.phone,r.cpf,(r.avatar_storage_key IS NOT NULL) hasAvatar,COALESCE(a.postal_code,'') postalCode,COALESCE(a.street,'') street,COALESCE(a.number,'') number,COALESCE(a.complement,'') complement,COALESCE(a.district,'') district,COALESCE(a.city,'') city,COALESCE(a.state,'') state,COALESCE(r.bank_name,'') bankName,COALESCE(r.bank_branch,'') bankBranch,COALESCE(r.bank_account,'') bankAccount,COALESCE(r.bank_account_type,'') bankAccountType,COALESCE(r.pix_key,'') pixKey FROM reseller_profiles r JOIN organization_members m ON m.organization_id=r.organization_id AND m.user_id=? JOIN users u ON u.id=m.user_id LEFT JOIN addresses a ON a.organization_id=r.organization_id AND a.type='primary' WHERE r.organization_id=?`,

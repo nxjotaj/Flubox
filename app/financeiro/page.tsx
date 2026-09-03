@@ -1,6 +1,11 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
-import { CircleDollarSign, Download, Landmark, ReceiptText } from 'lucide-react';
+import {
+  CircleDollarSign,
+  Download,
+  Landmark,
+  ReceiptText,
+} from 'lucide-react';
 import {
   AdminSectionWorkspace,
   type AdminWorkspaceRow,
@@ -63,71 +68,84 @@ export default async function FinancePage() {
   ]);
   return (
     <AppShell account={account} activePath="/financeiro">
-      <section className="page-heading"><div>
-        <span className="page-kicker"><CircleDollarSign /> Valores derivados do ledger</span>
-        <h1>Centro financeiro {account.organization.type==='supplier'?'do fornecedor':'do revendedor'}</h1>
-        <p>Saldo, pagamentos, taxas e repasses conciliados da sua organização.</p></div>
-        <a className="secondary-action" href="/api/finance/ledger.csv"><Download /> Exportar movimentações</a>
+      <section className="page-heading">
+        <div>
+          <span className="page-kicker">
+            <CircleDollarSign /> Valores derivados do ledger
+          </span>
+          <h1>
+            Centro financeiro{' '}
+            {account.organization.type === 'supplier'
+              ? 'do fornecedor'
+              : 'do revendedor'}
+          </h1>
+          <p>
+            Saldo, pagamentos, taxas e repasses conciliados da sua organização.
+          </p>
+        </div>
+        <a className="secondary-action" href="/api/finance/ledger.csv">
+          <Download /> Exportar movimentações
+        </a>
       </section>
-        <div className="finance-summary">
-          <article>
-            <CircleDollarSign />
-            <small>Saldo contabilizado</small>
-            <strong>
-              {((balance?.balance ?? 0) / 100).toLocaleString('pt-BR', {
+      <div className="finance-summary">
+        <article>
+          <CircleDollarSign />
+          <small>Saldo contabilizado</small>
+          <strong>
+            {((balance?.balance ?? 0) / 100).toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            })}
+          </strong>
+        </article>
+        <article>
+          <ReceiptText />
+          <small>Assinatura</small>
+          <strong>{subscription?.status ?? 'não configurada'}</strong>
+          {subscription && (
+            <span>
+              {(subscription.amountCents / 100).toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL',
               })}
-            </strong>
-          </article>
-          <article>
-            <ReceiptText />
-            <small>Assinatura</small>
-            <strong>{subscription?.status ?? 'não configurada'}</strong>
-            {subscription && (
-              <span>
-                {(subscription.amountCents / 100).toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
-                /mês
-              </span>
-            )}
-          </article>
-          <article>
-            <Landmark />
-            <small>Repasses</small>
-            <strong>{payouts.results.length}</strong>
-            <span>registros reais</span>
-          </article>
-        </div>
-        <h2>Movimentações</h2>
-        <AdminSectionWorkspace
-          section="financeiro"
-          columns={[
-            ['account', 'Conta'],
-            ['direction', 'Direção'],
-            ['amount', 'Valor'],
-            ['status', 'Status'],
-            ['reference', 'Referência'],
-            ['createdAt', 'Data'],
-          ]}
-          rows={entries.results.map(
-            (entry): AdminWorkspaceRow => ({
-              key: entry.id,
-              status: entry.status,
-              searchText: `${entry.account} ${entry.direction} ${entry.status} ${entry.referenceType} ${entry.referenceId}`,
-              cells: {
-                account: entry.account.replaceAll('_', ' '),
-                direction: entry.direction,
-                amount: `${entry.direction === 'credit' ? '+' : '-'} ${(Number(entry.amountCents) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
-                status: entry.status.replaceAll('_', ' '),
-                reference: `${entry.referenceType} · ${entry.referenceId}`,
-                createdAt: new Date(entry.createdAt).toLocaleString('pt-BR'),
-              },
-            }),
+              /mês
+            </span>
           )}
-        />
+        </article>
+        <article>
+          <Landmark />
+          <small>Repasses</small>
+          <strong>{payouts.results.length}</strong>
+          <span>registros reais</span>
+        </article>
+      </div>
+      <h2>Movimentações</h2>
+      <AdminSectionWorkspace
+        section="financeiro"
+        columns={[
+          ['account', 'Conta'],
+          ['direction', 'Direção'],
+          ['amount', 'Valor'],
+          ['status', 'Status'],
+          ['reference', 'Referência'],
+          ['createdAt', 'Data'],
+        ]}
+        rows={entries.results.map(
+          (entry): AdminWorkspaceRow => ({
+            key: entry.id,
+            status: entry.status,
+            searchText: `${entry.account} ${entry.direction} ${entry.status} ${entry.referenceType} ${entry.referenceId}`,
+            cells: {
+              account: entry.account.replaceAll('_', ' '),
+              direction: entry.direction,
+              amount: `${entry.direction === 'credit' ? '+' : '-'} ${(Number(entry.amountCents) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+              status: entry.status.replaceAll('_', ' '),
+              reference: `${entry.referenceType} · ${entry.referenceId}`,
+              createdAt: new Date(entry.createdAt).toLocaleString('pt-BR'),
+            },
+          }),
+        )}
+      />
     </AppShell>
   );
 }

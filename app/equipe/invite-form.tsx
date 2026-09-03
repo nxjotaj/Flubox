@@ -44,7 +44,11 @@ export function InviteForm() {
         onChange={(event) => setEmail(event.target.value)}
         required
       />
-      <select value={role} onChange={(event) => setRole(event.target.value)} aria-label="Função do convite">
+      <select
+        value={role}
+        onChange={(event) => setRole(event.target.value)}
+        aria-label="Função do convite"
+      >
         <option value="supplier_member">Colaborador configurável</option>
         <option value="supplier_operator_1">Operador de expedição 1</option>
         <option value="supplier_operator_2">Operador de expedição 2</option>

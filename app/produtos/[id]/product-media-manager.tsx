@@ -1,8 +1,8 @@
-"use client";
-import { ImagePlus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+'use client';
+import { ImagePlus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 export function ProductMediaManager({
   productId,
   media,
@@ -12,30 +12,30 @@ export function ProductMediaManager({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   async function upload(form: FormData) {
     setBusy(true);
     const response = await fetch(`/api/products/${productId}/media`, {
-      method: "POST",
+      method: 'POST',
       body: form,
     });
     const result = (await response.json()) as { error?: string };
     setMessage(
       response.ok
-        ? "Imagem adicionada ao produto."
-        : (result.error ?? "Falha no envio."),
+        ? 'Imagem adicionada ao produto.'
+        : (result.error ?? 'Falha no envio.'),
     );
     setBusy(false);
     if (response.ok) router.refresh();
   }
   async function remove(id: string) {
-    if (!confirm("Remover esta imagem do produto?")) return;
+    if (!confirm('Remover esta imagem do produto?')) return;
     setBusy(true);
     const response = await fetch(`/api/products/${productId}/media/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
     setBusy(false);
-    setMessage(response.ok ? "Imagem removida." : "Falha ao remover.");
+    setMessage(response.ok ? 'Imagem removida.' : 'Falha ao remover.');
     if (response.ok) router.refresh();
   }
   return (
@@ -89,7 +89,7 @@ export function ProductMediaManager({
             />
           </label>
           <button disabled={busy}>
-            {busy ? "Enviando…" : "Adicionar foto"}
+            {busy ? 'Enviando…' : 'Adicionar foto'}
           </button>
         </form>
       )}

@@ -12,7 +12,13 @@ import { z } from 'zod';
 
 const schema = z.object({
   items: z
-    .array(z.object({ productId: z.uuid(), variantId: z.uuid().optional(), quantity: z.int().min(1).max(100) }))
+    .array(
+      z.object({
+        productId: z.uuid(),
+        variantId: z.uuid().optional(),
+        quantity: z.int().min(1).max(100),
+      }),
+    )
     .min(1)
     .max(20),
   channel: z.string().trim().min(2).max(40),
@@ -78,20 +84,35 @@ export async function POST(request: Request) {
         { error: 'Revise itens, destinatário e endereço.', requestId },
         { status: 422 },
       );
-    const consolidated = new Map<string, {productId:string;variantId:string|null;quantity:number}>();
+    const consolidated = new Map<
+      string,
+      { productId: string; variantId: string | null; quantity: number }
+    >();
     for (const item of parsed.data.items) {
-      const key=`${item.productId}:${item.variantId??''}`; const current=consolidated.get(key);
-      consolidated.set(key,{productId:item.productId,variantId:item.variantId??null,quantity:(current?.quantity??0)+item.quantity});
+      const key = `${item.productId}:${item.variantId ?? ''}`;
+      const current = consolidated.get(key);
+      consolidated.set(key, {
+        productId: item.productId,
+        variantId: item.variantId ?? null,
+        quantity: (current?.quantity ?? 0) + item.quantity,
+      });
     }
     const offers = await Promise.all(
-      [...consolidated].map(async ([key,item]) => {
-        const offer=await getD1()
+      [...consolidated].map(async ([key, item]) => {
+        const offer = await getD1()
           .prepare(
             `SELECT p.id,p.title,p.sku,p.organization_id organizationId,pv.id variantId,pv.name variantName,pv.sku variantSku,COALESCE(pv.price_cents,o.price_cents) priceCents,o.commission_basis_points commission,CASE WHEN pv.id IS NOT NULL THEN pv.stock ELSE COALESCE((SELECT SUM(quantity) FROM inventory_movements WHERE product_id=p.id),0) END stock,COALESCE((SELECT SUM(quantity) FROM inventory_reservations WHERE product_id=p.id AND variant_id IS NOT DISTINCT FROM ? AND status='active' AND expires_at>?),0) reserved FROM products p JOIN supplier_offers o ON o.product_id=p.id JOIN organizations org ON org.id=p.organization_id AND org.status='active' JOIN subscriptions sub ON sub.organization_id=org.id AND sub.status IN ('active','grace_period') JOIN product_favorites pf ON pf.product_id=p.id AND pf.organization_id=? LEFT JOIN product_variants pv ON pv.id=? AND pv.product_id=p.id AND pv.status='active' WHERE p.id=? AND p.status='approved' AND (? IS NULL OR pv.id IS NOT NULL)`,
           )
-          .bind(item.variantId,new Date().toISOString(),account.organization.id,item.variantId,item.productId,item.variantId)
-          .first<Omit<Offer,'key'>>();
-        return offer?{...offer,key}:null;
+          .bind(
+            item.variantId,
+            new Date().toISOString(),
+            account.organization.id,
+            item.variantId,
+            item.productId,
+            item.variantId,
+          )
+          .first<Omit<Offer, 'key'>>();
+        return offer ? { ...offer, key } : null;
       }),
     );
     if (offers.some((offer) => !offer))
@@ -109,7 +130,10 @@ export async function POST(request: Request) {
         { status: 422 },
       );
     for (const offer of available)
-      if ((consolidated.get(offer.key)?.quantity ?? 0) > offer.stock - offer.reserved) {
+      if (
+        (consolidated.get(offer.key)?.quantity ?? 0) >
+        offer.stock - offer.reserved
+      ) {
         const requestedQuantity = consolidated.get(offer.key)?.quantity ?? 0;
         const availableQuantity = offer.stock - offer.reserved;
         await getD1()
@@ -123,7 +147,10 @@ export async function POST(request: Request) {
             offer.id,
             requestedQuantity,
             availableQuantity,
-            JSON.stringify({ title: offer.title, channel: parsed.data.channel }),
+            JSON.stringify({
+              title: offer.title,
+              channel: parsed.data.channel,
+            }),
             account.user.id,
             new Date().toISOString(),
           )
@@ -274,7 +301,11 @@ export async function POST(request: Request) {
             offer.id,
             offer.variantId,
             quantity,
-            JSON.stringify({ title: offer.title, sku: offer.variantSku??offer.sku, variant: offer.variantName }),
+            JSON.stringify({
+              title: offer.title,
+              sku: offer.variantSku ?? offer.sku,
+              variant: offer.variantName,
+            }),
             offer.priceCents,
             offer.commission,
             offer.priceCents * quantity,
@@ -368,7 +399,9 @@ export async function POST(request: Request) {
       );
     }
     await getD1().batch(
-      [...new Set([...consolidated.values()].map(item=>item.productId))].map((productId) =>
+      [
+        ...new Set([...consolidated.values()].map((item) => item.productId)),
+      ].map((productId) =>
         getD1()
           .prepare(
             `DELETE FROM cart_items WHERE organization_id=? AND product_id=?`,

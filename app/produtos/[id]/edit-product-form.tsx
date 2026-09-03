@@ -68,7 +68,10 @@ export function EditProductForm({
   async function submit(formData: FormData) {
     setBusy(true);
     setMessage('');
-    const value = (key: string) => { const item=formData.get(key); return typeof item==='string'?item:''; };
+    const value = (key: string) => {
+      const item = formData.get(key);
+      return typeof item === 'string' ? item : '';
+    };
     const integer = (key: string) => {
       const parsed = Number(value(key));
       return parsed > 0 ? parsed : undefined;
