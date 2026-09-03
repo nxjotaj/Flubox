@@ -1,0 +1,7 @@
+'use client';
+import { AddToCartButton } from '../catalog-actions';
+import { ShoppingCart } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+type Variant={id:string;name:string;sku:string;priceCents:number;stock:number;attributes:Record<string,string>};
+export function VariantSelector({productId,variants}:{productId:string;variants:Variant[]}){const available=variants.filter(item=>item.stock>0);const [selected,setSelected]=useState(available[0]?.id??'');const current=variants.find(item=>item.id===selected);return <section className="variant-selector"><header><div><strong>Escolha a variação</strong><small>Preço e estoque são controlados por SKU.</small></div>{current&&<b>{(current.priceCents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b>}</header><div>{variants.map(variant=><button type="button" key={variant.id} disabled={variant.stock<=0} className={selected===variant.id?'active':''} onClick={()=>setSelected(variant.id)}><strong>{variant.name}</strong><small>{variant.sku} · {variant.stock>0?`${variant.stock} un.`:'Sem estoque'}</small></button>)}</div>{current&&<dl>{Object.entries(current.attributes).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>}<footer><Link className={selected?'primary-link':'primary-link disabled'} href={selected?`/checkout/${productId}?variant=${selected}`:'#'}><ShoppingCart/> Criar pedido</Link>{selected&&<AddToCartButton productId={productId} variantId={selected}/>}</footer></section>}
