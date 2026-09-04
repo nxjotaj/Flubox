@@ -36,9 +36,13 @@ export default async function RootLayout({
     '/integracoes',
   ];
   const pageOwnsShell =
-    ['/pedidos', '/financeiro', '/relatorios', '/configuracoes'].includes(
-      pathname,
-    ) || /^\/produtos\/[^/]+$/.test(pathname);
+    [
+      '/pedidos',
+      '/financeiro',
+      '/relatorios',
+      '/configuracoes',
+      '/casos',
+    ].includes(pathname) || /^\/produtos\/[^/]+$/.test(pathname);
   let content = children;
   if (
     !pageOwnsShell &&

@@ -33,6 +33,11 @@ const labels: Record<string, string> = {
   cancellation_scheduled: 'Cancelamento agendado',
   cancellation_reversed: 'Cancelamento desfeito',
   subscription_cancelled: 'Assinatura cancelada',
+  dispute: 'Disputa',
+  open: 'Aberta',
+  under_review: 'Em análise',
+  resolved: 'Resolvida',
+  closed: 'Encerrada',
 };
 
 export function labelFor(

@@ -3,10 +3,13 @@ import {
   AdminSectionWorkspace,
   type AdminWorkspaceRow,
 } from '@/components/admin-section-workspace';
+import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ShieldAlert } from 'lucide-react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 export default async function CasesPage() {
   const user = await requireAuthenticatedUser('/casos');
@@ -26,48 +29,49 @@ export default async function CasesPage() {
       number: string;
     }>();
   return (
-    <main className="simple-app-page operational-legacy-page">
-      <section>
-        <section className="page-heading">
-          <div>
-            <span className="page-kicker">
-              <ShieldAlert /> Pós-venda rastreável
-            </span>
-            <h1>Casos e disputas</h1>
-            <p>
-              Converse, envie evidências e acompanhe a mediação vinculada ao
-              pedido.
-            </p>
-          </div>
-        </section>
-        <AdminSectionWorkspace
-          section="casos"
-          detailBase="/mensagens"
-          detailQueryParam="case"
-          columns={[
-            ['number', 'Pedido'],
-            ['type', 'Tipo'],
-            ['reason', 'Motivo'],
-            ['status', 'Status'],
-            ['createdAt', 'Abertura'],
-          ]}
-          rows={cases.results.map(
-            (item): AdminWorkspaceRow => ({
-              key: item.id,
-              id: item.id,
-              status: item.status,
-              searchText: `${item.number} ${item.type} ${item.reason} ${item.status}`,
-              cells: {
-                number: item.number,
-                type: item.type.replaceAll('_', ' '),
-                reason: item.reason,
-                status: item.status.replaceAll('_', ' '),
-                createdAt: new Date(item.createdAt).toLocaleString('pt-BR'),
-              },
-            }),
-          )}
-        />
+    <AppShell account={account} activePath="/casos">
+      <Link className="back-link" href="/dashboard">
+        <ArrowLeft /> Voltar para a visão geral
+      </Link>
+      <section className="page-heading">
+        <div>
+          <span className="page-kicker">
+            <ShieldAlert /> Pós-venda rastreável
+          </span>
+          <h1>Casos e disputas</h1>
+          <p>
+            Converse, envie evidências e acompanhe a mediação vinculada ao
+            pedido.
+          </p>
+        </div>
       </section>
-    </main>
+      <AdminSectionWorkspace
+        section="casos"
+        detailBase="/mensagens"
+        detailQueryParam="case"
+        columns={[
+          ['number', 'Pedido'],
+          ['type', 'Tipo'],
+          ['reason', 'Motivo'],
+          ['status', 'Situação'],
+          ['createdAt', 'Abertura'],
+        ]}
+        rows={cases.results.map(
+          (item): AdminWorkspaceRow => ({
+            key: item.id,
+            id: item.id,
+            status: item.status,
+            searchText: `${item.number} ${labelFor(item.type)} ${item.reason} ${labelFor(item.status)}`,
+            cells: {
+              number: item.number,
+              type: labelFor(item.type),
+              reason: item.reason,
+              status: labelFor(item.status),
+              createdAt: new Date(item.createdAt).toLocaleString('pt-BR'),
+            },
+          }),
+        )}
+      />
+    </AppShell>
   );
 }

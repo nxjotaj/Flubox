@@ -13,6 +13,7 @@ import {
   Filter,
   Search,
 } from 'lucide-react';
+import { labelFor } from '@/lib/presentation';
 
 export type AdminWorkspaceRow = {
   key: string;
@@ -269,7 +270,7 @@ export function AdminSectionWorkspace({
                 <option value="all">Todos os status</option>
                 {statuses.map((item) => (
                   <option key={item} value={item}>
-                    {item.replaceAll('_', ' ')}
+                    {labelFor(item)}
                   </option>
                 ))}
               </select>

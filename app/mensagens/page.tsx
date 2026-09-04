@@ -1,9 +1,11 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { MessageCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { MessageComposer } from './message-composer';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +56,11 @@ export default async function MessagesPage({
     : { results: [] };
   return (
     <AppShell account={account} activePath="/mensagens">
+      {requested && (
+        <Link className="back-link" href="/casos">
+          <ArrowLeft /> Voltar para casos e disputas
+        </Link>
+      )}
       <section className="page-heading">
         <div>
           <span className="page-kicker">
@@ -97,7 +104,7 @@ export default async function MessagesPage({
               <div>
                 <strong>{selected.number}</strong>
                 <small>
-                  {selected.reason} · {selected.status}
+                  {selected.reason} · {labelFor(selected.status)}
                 </small>
               </div>
             </header>
