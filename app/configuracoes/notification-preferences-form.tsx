@@ -2,6 +2,7 @@
 
 import { Bell, Save } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 type Preferences = {
   emailOperations: boolean;
@@ -68,8 +69,11 @@ export function NotificationPreferencesForm({
     ],
   ] as const;
   return (
-    <form className="surface-card preferences-form" action={save}>
-      <header>
+    <form
+      className="surface-card preferences-form flex w-full max-w-[980px] flex-col gap-0 p-6"
+      action={save}
+    >
+      <header className="mb-3 flex items-start gap-3">
         <Bell />
         <div>
           <h2>Notificações</h2>
@@ -77,12 +81,16 @@ export function NotificationPreferencesForm({
         </div>
       </header>
       {options.map(([key, title, description]) => (
-        <label className="preference-row" key={key}>
-          <span>
+        <label
+          className="preference-row flex min-h-16 w-full items-center justify-between gap-6 border-t py-4"
+          key={key}
+        >
+          <span className="flex min-w-0 flex-col gap-1">
             <strong>{title}</strong>
             <small>{description}</small>
           </span>
           <input
+            className="size-[18px] min-h-[18px] min-w-[18px] shrink-0 p-0"
             type="checkbox"
             name={key}
             aria-label={title}
@@ -90,9 +98,9 @@ export function NotificationPreferencesForm({
           />
         </label>
       ))}
-      <button disabled={busy}>
+      <Button className="mt-4 w-fit" size="lg" disabled={busy}>
         <Save /> {busy ? 'Salvando…' : 'Salvar notificações'}
-      </button>
+      </Button>
       {message && <output>{message}</output>}
     </form>
   );

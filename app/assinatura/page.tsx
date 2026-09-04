@@ -1,5 +1,12 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { getD1 } from '@/db';
 import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
@@ -16,14 +23,13 @@ export default async function SubscriptionPage() {
   if (account.organization.type !== 'supplier') redirect('/dashboard');
   const subscription = await getD1()
     .prepare(
-      `SELECT s.id,s.status,s.monthly_amount_cents amountCents,s.current_period_start periodStart,s.current_period_end periodEnd,s.cancel_at_period_end cancelAtPeriodEnd,pm.brand,pm.last_four lastFour,pm.expiry_month expiryMonth,pm.expiry_year expiryYear FROM subscriptions s LEFT JOIN payment_methods pm ON pm.organization_id=s.organization_id AND pm.status='active' WHERE s.organization_id=?`,
+      `SELECT s.id,s.status,s.monthly_amount_cents amountCents,s.current_period_end periodEnd,s.cancel_at_period_end cancelAtPeriodEnd,pm.brand,pm.last_four lastFour,pm.expiry_month expiryMonth,pm.expiry_year expiryYear FROM subscriptions s LEFT JOIN payment_methods pm ON pm.organization_id=s.organization_id AND pm.status='active' WHERE s.organization_id=?`,
     )
     .bind(account.organization.id)
     .first<{
       id: string;
       status: string;
       amountCents: number;
-      periodStart: string | null;
       periodEnd: string | null;
       cancelAtPeriodEnd: boolean;
       brand: string | null;
@@ -63,50 +69,68 @@ export default async function SubscriptionPage() {
           </p>
         </div>
       </section>
-      <section className="subscription-summary-grid">
-        <article className="surface-card subscription-status-card">
-          <span>Situação da assinatura</span>
-          <strong>{labelFor(subscription?.status ?? 'pending')}</strong>
-          {subscription?.cancelAtPeriodEnd && (
-            <b>Cancelamento agendado para o fim do período</b>
-          )}
-        </article>
-        <article className="surface-card subscription-metric">
-          <CalendarDays />
-          <span>Próximo vencimento</span>
-          <strong>
-            {subscription?.periodEnd
-              ? new Date(subscription.periodEnd).toLocaleDateString('pt-BR')
-              : 'A definir'}
-          </strong>
-        </article>
-        <article className="surface-card subscription-metric">
-          <CreditCard />
-          <span>Forma de cobrança</span>
-          <strong>
-            {subscription?.brand
-              ? `${subscription.brand} final ${subscription.lastFour}`
-              : 'Não cadastrada'}
-          </strong>
-          {subscription?.expiryMonth && (
-            <small>
-              Validade {String(subscription.expiryMonth).padStart(2, '0')}/
-              {subscription.expiryYear}
-            </small>
-          )}
-        </article>
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="min-h-44 bg-[#17181a] text-white">
+          <CardContent className="flex h-full flex-col gap-3 py-2">
+            <span className="text-xs font-bold tracking-wider text-neutral-300 uppercase">
+              Situação da assinatura
+            </span>
+            <strong className="mt-auto text-3xl">
+              {labelFor(subscription?.status ?? 'pending')}
+            </strong>
+            {subscription?.cancelAtPeriodEnd && (
+              <b className="text-xs text-orange-200">
+                Cancelamento agendado para o fim do período
+              </b>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="min-h-44">
+          <CardContent className="flex h-full flex-col gap-3 py-2">
+            <CalendarDays className="text-primary" />
+            <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+              Próximo vencimento
+            </span>
+            <strong className="mt-auto text-xl">
+              {subscription?.periodEnd
+                ? new Date(subscription.periodEnd).toLocaleDateString('pt-BR')
+                : 'A definir'}
+            </strong>
+          </CardContent>
+        </Card>
+        <Card className="min-h-44">
+          <CardContent className="flex h-full flex-col gap-3 py-2">
+            <CreditCard className="text-primary" />
+            <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+              Forma de cobrança
+            </span>
+            <strong className="mt-auto text-xl">
+              {subscription?.brand
+                ? `${subscription.brand} final ${subscription.lastFour}`
+                : 'Não cadastrada'}
+            </strong>
+            {subscription?.expiryMonth && (
+              <small className="text-muted-foreground">
+                Validade {String(subscription.expiryMonth).padStart(2, '0')}/
+                {subscription.expiryYear}
+              </small>
+            )}
+          </CardContent>
+        </Card>
       </section>
       {!active && (
-        <section className="surface-card subscription-activation">
-          <div>
-            <h2>Ativar assinatura</h2>
-            <p>
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Ativar assinatura</CardTitle>
+            <CardDescription>
               Cadastre a forma de cobrança para liberar a operação do
               fornecedor.
-            </p>
-          </div>
-          <PaymentMethodForm />
-        </section>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PaymentMethodForm />
+          </CardContent>
+        </Card>
       )}
       {active && (
         <SubscriptionActions
@@ -114,37 +138,48 @@ export default async function SubscriptionPage() {
           cancellationScheduled={Boolean(subscription?.cancelAtPeriodEnd)}
         />
       )}
-      <section className="surface-card subscription-history">
-        <header>
-          <ReceiptText />
+      <Card className="mt-4">
+        <CardHeader className="grid grid-cols-[auto_1fr] gap-x-3">
+          <ReceiptText className="text-primary" />
           <div>
-            <h2>Histórico da mensalidade</h2>
-            <p>Pagamentos, alterações de cobrança e cancelamentos.</p>
+            <CardTitle>Histórico da mensalidade</CardTitle>
+            <CardDescription>
+              Pagamentos, alterações de cobrança e cancelamentos.
+            </CardDescription>
           </div>
-        </header>
-        {history.results.length ? (
-          <div className="subscription-history-list">
-            {history.results.map((event, index) => (
-              <article key={`${event.occurredAt}-${index}`}>
-                <div>
-                  <strong>{labelFor(event.type)}</strong>
-                  <small>{event.reason}</small>
-                </div>
-                <div>
-                  {event.amountCents !== null && (
-                    <b>{money(event.amountCents)}</b>
-                  )}
-                  <time>
-                    {new Date(event.occurredAt).toLocaleString('pt-BR')}
-                  </time>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="empty-copy">Nenhum lançamento registrado ainda.</p>
-        )}
-      </section>
+        </CardHeader>
+        <CardContent>
+          {history.results.length ? (
+            <div className="divide-y">
+              {history.results.map((event, index) => (
+                <article
+                  className="flex items-start justify-between gap-5 py-4"
+                  key={`${event.occurredAt}-${index}`}
+                >
+                  <div className="grid gap-1">
+                    <strong>{labelFor(event.type)}</strong>
+                    <small className="text-muted-foreground">
+                      {event.reason}
+                    </small>
+                  </div>
+                  <div className="grid shrink-0 gap-1 text-right">
+                    {event.amountCents !== null && (
+                      <b>{money(event.amountCents)}</b>
+                    )}
+                    <time className="text-xs text-muted-foreground">
+                      {new Date(event.occurredAt).toLocaleString('pt-BR')}
+                    </time>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="py-6 text-sm text-muted-foreground">
+              Nenhum lançamento registrado ainda.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </AppShell>
   );
 }

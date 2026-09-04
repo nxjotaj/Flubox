@@ -4,6 +4,14 @@ import { CreditCard, RotateCcw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PaymentMethodForm } from './payment-method-form';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export function SubscriptionActions({
   active,
@@ -42,49 +50,63 @@ export function SubscriptionActions({
     if (response.ok) router.refresh();
   }
   return (
-    <section className="surface-card subscription-actions-card">
-      <div>
-        <h2>Ações da assinatura</h2>
-        <p>Gerencie cobrança, renovação e cancelamento.</p>
-      </div>
-      <div className="subscription-actions">
-        {active && (
-          <button
-            className="secondary-action"
-            onClick={() => setEditingCard((value) => !value)}
-          >
-            <CreditCard /> Alterar cartão de cobrança
-          </button>
-        )}
-        {active && !cancellationScheduled && (
-          <button
-            className="danger-outline"
-            disabled={busy}
-            onClick={() => void command('cancel')}
-          >
-            <XCircle /> Cancelar renovação
-          </button>
-        )}
-        {active && cancellationScheduled && (
-          <button
-            className="secondary-action"
-            disabled={busy}
-            onClick={() => void command('reactivate')}
-          >
-            <RotateCcw /> Manter assinatura ativa
-          </button>
-        )}
-      </div>
-      {editingCard && (
-        <div className="subscription-card-editor">
-          <h3>Novo cartão</h3>
-          <PaymentMethodForm
-            mode="replace"
-            onSuccess={() => setEditingCard(false)}
-          />
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle>Ações da assinatura</CardTitle>
+        <CardDescription>
+          Gerencie cobrança, renovação e cancelamento.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-5">
+        <div className="flex flex-wrap gap-3">
+          {active && (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => setEditingCard((value) => !value)}
+            >
+              <CreditCard /> Alterar cartão de cobrança
+            </Button>
+          )}
+          {active && !cancellationScheduled && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="lg"
+              disabled={busy}
+              onClick={() => void command('cancel')}
+            >
+              <XCircle /> Cancelar renovação
+            </Button>
+          )}
+          {active && cancellationScheduled && (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              disabled={busy}
+              onClick={() => void command('reactivate')}
+            >
+              <RotateCcw /> Manter assinatura ativa
+            </Button>
+          )}
         </div>
-      )}
-      {message && <output>{message}</output>}
-    </section>
+        {editingCard && (
+          <div className="rounded-xl border bg-muted/40 p-5">
+            <h3 className="mb-4 font-semibold">Novo cartão</h3>
+            <PaymentMethodForm
+              mode="replace"
+              onSuccess={() => setEditingCard(false)}
+            />
+          </div>
+        )}
+        {message && (
+          <output className="rounded-lg bg-emerald-50 p-3 text-sm font-medium text-emerald-800">
+            {message}
+          </output>
+        )}
+      </CardContent>
+    </Card>
   );
 }

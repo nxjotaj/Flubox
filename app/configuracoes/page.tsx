@@ -36,18 +36,33 @@ async function preferences(userId: string, organizationId: string) {
 
 function LegalAndPrivacy() {
   return (
-    <section className="surface-card privacy-section">
-      <div className="privacy-heading">
+    <section className="surface-card privacy-section mt-4 w-full max-w-[980px] p-6">
+      <div className="privacy-heading flex flex-col items-start justify-between gap-5 lg:flex-row">
         <div>
           <h2>Documentos legais e seus dados</h2>
           <p>
             Consulte os documentos vigentes ou exerça seus direitos de titular.
           </p>
         </div>
-        <div className="legal-links">
-          <a href="/termos">Contrato de serviços</a>
-          <a href="/privacidade">Política de privacidade</a>
-          <a href="/api/privacy/export">Baixar meus dados</a>
+        <div className="legal-links flex flex-wrap gap-2">
+          <a
+            className="rounded-lg border px-3 py-2 text-sm font-semibold no-underline"
+            href="/termos"
+          >
+            Contrato de serviços
+          </a>
+          <a
+            className="rounded-lg border px-3 py-2 text-sm font-semibold no-underline"
+            href="/privacidade"
+          >
+            Política de privacidade
+          </a>
+          <a
+            className="rounded-lg border px-3 py-2 text-sm font-semibold no-underline"
+            href="/api/privacy/export"
+          >
+            Baixar meus dados
+          </a>
         </div>
       </div>
       <PrivacyForm />

@@ -201,8 +201,9 @@ export function SupplierProfileForm({
           required
         />
       </label>
-      <label className="wide visibility-setting">
+      <label className="wide visibility-setting grid grid-cols-[18px_minmax(0,1fr)] items-start gap-3 rounded-xl border bg-muted/40 p-4">
         <input
+          className="size-[18px] min-h-[18px] min-w-[18px] p-0"
           type="checkbox"
           name="publicProfileEnabled"
           aria-label="Exibir perfil comercial aos revendedores"
