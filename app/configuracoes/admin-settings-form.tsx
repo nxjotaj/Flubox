@@ -59,7 +59,16 @@ export function AdminSettingsForm({ initial }: { initial: Settings }) {
     );
   }
   return (
-    <form className="settings-grid" action={submit}>
+    <form
+      className="settings-grid surface-card operational-settings-card"
+      action={submit}
+    >
+      <header className="wide">
+        <h2>Funcionamento da plataforma</h2>
+        <p>
+          Regras comerciais, financeiras e operacionais aplicadas pelo Flubox.
+        </p>
+      </header>
       {fields.map(([key, label, type, fallback]) => (
         <label key={key} htmlFor={key}>
           <span>{label}</span>

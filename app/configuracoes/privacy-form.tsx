@@ -19,7 +19,7 @@ export function PrivacyForm() {
     );
   }
   return (
-    <form className="checkout-form" action={submit}>
+    <form className="privacy-request-form" action={submit}>
       <label>
         Direito solicitado
         <select name="type" required>
@@ -29,7 +29,7 @@ export function PrivacyForm() {
           <option value="portability">Portabilidade</option>
         </select>
       </label>
-      <label className="wide">
+      <label>
         Justificativa
         <textarea name="reason" minLength={5} maxLength={500} required />
       </label>

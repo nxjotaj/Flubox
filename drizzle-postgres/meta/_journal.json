@@ -71,6 +71,13 @@
       "when": 1788531728654,
       "tag": "0009_icy_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788542737505,
+      "tag": "0010_nosy_sister_grimm",
+      "breakpoints": true
     }
   ]
 }

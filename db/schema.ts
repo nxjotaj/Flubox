@@ -157,6 +157,10 @@ export const supplierProfiles = pgTable('supplier_profiles', {
   responsibleCpf: text('responsible_cpf').notNull(),
   responsibleEmail: text('responsible_email').notNull(),
   responsiblePhone: text('responsible_phone').notNull(),
+  logoStorageKey: text('logo_storage_key'),
+  publicProfileEnabled: boolean('public_profile_enabled')
+    .notNull()
+    .default(true),
   reputationBasisPoints: integer('reputation_basis_points')
     .notNull()
     .default(10000),
@@ -164,6 +168,27 @@ export const supplierProfiles = pgTable('supplier_profiles', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+export const notificationPreferences = pgTable(
+  'notification_preferences',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    emailOperations: boolean('email_operations').notNull().default(true),
+    emailOrders: boolean('email_orders').notNull().default(true),
+    emailMessages: boolean('email_messages').notNull().default(true),
+    emailMarketing: boolean('email_marketing').notNull().default(false),
+    browserNotifications: boolean('browser_notifications')
+      .notNull()
+      .default(true),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.organizationId] })],
+);
 
 export const resellerProfiles = pgTable('reseller_profiles', {
   organizationId: text('organization_id')

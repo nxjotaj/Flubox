@@ -25,7 +25,7 @@ export default async function SupplierStore({
   if (account.organization.type !== 'reseller') redirect('/dashboard');
   const supplier = await getD1()
     .prepare(
-      `SELECT o.id,o.display_name displayName,sp.trade_name tradeName,sp.reputation_basis_points reputation,CASE WHEN sf.supplier_organization_id IS NULL THEN 0 ELSE 1 END following FROM organizations o JOIN supplier_profiles sp ON sp.organization_id=o.id JOIN subscriptions s ON s.organization_id=o.id AND s.status IN ('active','grace_period') LEFT JOIN supplier_followers sf ON sf.supplier_organization_id=o.id AND sf.reseller_organization_id=? WHERE o.id=? AND o.type='supplier' AND o.status='active'`,
+      `SELECT o.id,o.display_name displayName,sp.trade_name tradeName,sp.legal_name legalName,sp.cnpj,sp.responsible_email responsibleEmail,sp.responsible_phone responsiblePhone,sp.public_profile_enabled publicProfileEnabled,sp.reputation_basis_points reputation,CASE WHEN sf.supplier_organization_id IS NULL THEN 0 ELSE 1 END following,a.street,a.number,a.complement,a.district,a.city,a.state,a.postal_code postalCode FROM organizations o JOIN supplier_profiles sp ON sp.organization_id=o.id JOIN subscriptions s ON s.organization_id=o.id AND s.status IN ('active','grace_period') LEFT JOIN supplier_followers sf ON sf.supplier_organization_id=o.id AND sf.reseller_organization_id=? LEFT JOIN addresses a ON a.organization_id=o.id AND a.type='primary' WHERE o.id=? AND o.type='supplier' AND o.status='active'`,
     )
     .bind(account.organization.id, id)
     .first<{
@@ -34,6 +34,18 @@ export default async function SupplierStore({
       tradeName: string;
       reputation: number;
       following: number;
+      legalName: string;
+      cnpj: string;
+      responsibleEmail: string;
+      responsiblePhone: string;
+      publicProfileEnabled: boolean;
+      street: string | null;
+      number: string | null;
+      complement: string | null;
+      district: string | null;
+      city: string | null;
+      state: string | null;
+      postalCode: string | null;
     }>();
   if (!supplier) notFound();
   const products = await getD1()
@@ -74,6 +86,45 @@ export default async function SupplierStore({
           initial={Boolean(supplier.following)}
         />
       </section>
+      {supplier.publicProfileEnabled && (
+        <section className="surface-card supplier-public-info">
+          <h2>Dados comerciais do fornecedor</h2>
+          <dl>
+            <div>
+              <dt>Razão social</dt>
+              <dd>{supplier.legalName}</dd>
+            </div>
+            <div>
+              <dt>CNPJ</dt>
+              <dd>{supplier.cnpj}</dd>
+            </div>
+            <div>
+              <dt>Telefone</dt>
+              <dd>{supplier.responsiblePhone}</dd>
+            </div>
+            <div>
+              <dt>E-mail</dt>
+              <dd>{supplier.responsibleEmail}</dd>
+            </div>
+            <div className="wide">
+              <dt>Endereço</dt>
+              <dd>
+                {[
+                  supplier.street,
+                  supplier.number,
+                  supplier.complement,
+                  supplier.district,
+                  supplier.city,
+                  supplier.state,
+                  supplier.postalCode,
+                ]
+                  .filter(Boolean)
+                  .join(', ')}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      )}
       <section className="supplier-product-grid">
         {products.results.map((product) => (
           <article key={product.id}>
