@@ -12,6 +12,7 @@ export const PERMISSIONS = {
   'payments.view': 'Visualizar pagamentos',
   'audit.view': 'Visualizar auditoria',
   'settings.manage': 'Gerenciar configurações',
+  'integrations.manage': 'Conectar canais e gerenciar anúncios',
 } as const;
 
 export type PermissionKey = keyof typeof PERMISSIONS;
@@ -49,6 +50,7 @@ export const ROLE_PERMISSION_MAP = {
     'orders.view',
     'orders.manage',
     'payments.view',
+    'integrations.manage',
   ],
   reseller_member: [
     'organization.view',

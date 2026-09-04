@@ -13,6 +13,7 @@ const profiles = [
   ['admin@flubox.com.br', '/admin', 'Central de administração'],
   ['fornecedor@flubox.com.br', '/dashboard', 'Visão geral'],
   ['revendedor@flubox.com.br', '/dashboard', 'Visão geral'],
+  ['revendedor@flubox.com.br', '/integracoes', 'Hub multicanal'],
 ];
 
 async function timedFetch(path, cookies) {

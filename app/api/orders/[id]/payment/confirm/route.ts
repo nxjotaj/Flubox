@@ -1,5 +1,6 @@
 import { getAuthenticatedUser } from '@/app/chatgpt-auth';
 import { getD1 } from '@/db';
+import { syncProductListings } from '@/modules/integrations/service';
 import { logError, requestIdFrom } from '@/lib/request-context';
 import { getAccountContext } from '@/modules/identity/service';
 import { addBusinessDays } from '@/modules/logistics/sla';
@@ -216,6 +217,10 @@ export async function POST(
         );
     }
     await getD1().batch(statements);
+    for (const productId of new Set(
+      items.results.map((item) => item.productId),
+    ))
+      await syncProductListings(productId);
     return Response.json({
       status: nextStatus,
       next: `/pedidos/${id}`,

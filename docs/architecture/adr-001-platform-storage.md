@@ -1,19 +1,19 @@
-# ADR-001 — Persistência inicial na plataforma
+# ADR-001 — Persistência da aplicação
 
-Status: aceita para o MVP, com revisão obrigatória antes dos módulos financeiros.
+Status: substituída pela adoção de PostgreSQL/Supabase.
 
 ## Contexto
 
-O Flubox está sendo construído no runtime Cloudflare/Sites, que não oferece conexões TCP diretas. O produto precisa de persistência relacional, migrations e isolamento desde a fundação.
+O Flubox é uma aplicação Next.js com persistência relacional, migrations versionadas e isolamento entre organizações. A arquitetura precisa sustentar catálogo, estoque, pedidos e operações financeiras com transações e integridade referencial.
 
 ## Decisão
 
-Usar D1/SQLite através do Drizzle nesta etapa. O acesso fica atrás de módulos server-side, e os contratos de domínio não recebem tipos do provedor. Migrations SQL são versionadas em `drizzle/`.
+Usar PostgreSQL hospedado no Supabase, acessado exclusivamente por módulos server-side. Os contratos de domínio não recebem tipos do provedor e as migrations PostgreSQL são versionadas em `drizzle-postgres/`.
 
 ## Consequências
 
-- Desenvolvimento local e hospedado usam o mesmo modelo operacional.
-- Queries usam prepared statements, constraints e índices.
-- D1 é aceitável para identidade, catálogo e fluxos operacionais do MVP.
-- Antes da Fase 4, será feito um checkpoint obrigatório de concorrência, transações e ledger. Se as garantias exigirem PostgreSQL, a migração ocorrerá antes de dinheiro real, usando um provedor HTTP compatível com o runtime.
-- Nenhuma lógica financeira pode depender de comportamento específico do SQLite.
+- Desenvolvimento local e produção usam o mesmo modelo relacional PostgreSQL.
+- Queries usam parâmetros, constraints, índices e transações nas operações críticas.
+- Supabase fornece autenticação e Storage privado; regras sensíveis permanecem no servidor.
+- Estoque, pedidos e ledger dependem das garantias transacionais do PostgreSQL.
+- Nenhuma lógica de domínio deve depender de comportamento proprietário do provedor de hospedagem.

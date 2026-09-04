@@ -3,6 +3,7 @@ import { getD1 } from '@/db';
 import { requestIdFrom, logError } from '@/lib/request-context';
 import { requireAccountPermission } from '@/modules/identity/service';
 import { z } from 'zod';
+import { syncProductListings } from '@/modules/integrations/service';
 const schema = z.object({
   quantity: z.int().refine((value) => value !== 0),
   reason: z.string().trim().min(3).max(200),
@@ -84,6 +85,7 @@ export async function POST(
           now,
         ),
     ]);
+    await syncProductListings(id);
     return Response.json({ stock: next, requestId });
   } catch (error) {
     logError(error, { requestId, route: 'POST inventory adjustment' });

@@ -33,6 +33,7 @@ export default async function RootLayout({
     '/favoritos',
     '/relatorios',
     '/configuracoes',
+    '/integracoes',
   ];
   const pageOwnsShell =
     ['/pedidos', '/financeiro', '/relatorios', '/configuracoes'].includes(

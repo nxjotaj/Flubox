@@ -64,6 +64,13 @@
       "when": 1788433623348,
       "tag": "0008_rainy_harry_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788531728654,
+      "tag": "0009_icy_rattler",
+      "breakpoints": true
     }
   ]
 }

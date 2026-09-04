@@ -41,6 +41,16 @@ export async function POST(request: Request) {
             `INSERT INTO order_events (id,order_id,type,from_status,to_status,actor_user_id,created_at) VALUES (?,?,'payment.expired','awaiting_payment','payment_expired',?,?)`,
           )
           .bind(crypto.randomUUID(), order.id, admin.user.id, now),
+        getD1()
+          .prepare(
+            `UPDATE sales_channel_listings SET status='paused',published_stock=0,last_error='Pagamento do custo expirado; revise a venda no marketplace.',updated_at=? WHERE id IN (SELECT l.id FROM sales_channel_listings l JOIN sales_channel_order_links ol ON ol.connection_id=l.connection_id JOIN order_items oi ON oi.order_id=ol.order_id AND oi.product_id=l.product_id AND oi.variant_id IS NOT DISTINCT FROM l.variant_id WHERE ol.order_id=?)`,
+          )
+          .bind(now, order.id),
+        getD1()
+          .prepare(
+            `INSERT INTO notifications (id,user_id,organization_id,type,title,body,entity_type,entity_id,created_at) SELECT ?,c.created_by,c.organization_id,'marketplace.payment_expired','Pagamento do marketplace expirado','O estoque foi liberado e o anúncio pausado. Revise a venda diretamente no canal.','order',?,? FROM sales_channel_order_links ol JOIN sales_channel_connections c ON c.id=ol.connection_id WHERE ol.order_id=? ON CONFLICT DO NOTHING`,
+          )
+          .bind(crypto.randomUUID(), order.id, now, order.id),
       ]);
     await getD1()
       .prepare(

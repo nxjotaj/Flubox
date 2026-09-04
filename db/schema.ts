@@ -1278,3 +1278,209 @@ export const rateLimitBuckets = pgTable(
   },
   (table) => [primaryKey({ columns: [table.key, table.windowStart] })],
 );
+
+export const salesChannelConnections = pgTable(
+  'sales_channel_connections',
+  {
+    id: text('id').primaryKey(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    provider: text('provider', {
+      enum: ['mercado_livre', 'shopee'],
+    }).notNull(),
+    externalAccountId: text('external_account_id').notNull(),
+    displayName: text('display_name').notNull(),
+    status: text('status', {
+      enum: ['pending', 'active', 'expired', 'revoked', 'error'],
+    })
+      .notNull()
+      .default('pending'),
+    encryptedAccessToken: text('encrypted_access_token'),
+    encryptedRefreshToken: text('encrypted_refresh_token'),
+    tokenExpiresAt: text('token_expires_at'),
+    scopesJson: text('scopes_json').notNull().default('[]'),
+    settingsJson: text('settings_json').notNull().default('{}'),
+    lastSyncedAt: text('last_synced_at'),
+    lastError: text('last_error'),
+    createdBy: text('created_by')
+      .notNull()
+      .references(() => users.id),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_channel_connection_account').on(
+      table.provider,
+      table.externalAccountId,
+    ),
+    index('idx_channel_connection_org_status').on(
+      table.organizationId,
+      table.status,
+    ),
+  ],
+);
+
+export const salesChannelOauthStates = pgTable(
+  'sales_channel_oauth_states',
+  {
+    id: text('id').primaryKey(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    provider: text('provider').notNull(),
+    stateHash: text('state_hash').notNull().unique(),
+    returnPath: text('return_path').notNull().default('/integracoes'),
+    expiresAt: text('expires_at').notNull(),
+    consumedAt: text('consumed_at'),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [index('idx_oauth_state_expiry').on(table.expiresAt)],
+);
+
+export const salesChannelListings = pgTable(
+  'sales_channel_listings',
+  {
+    id: text('id').primaryKey(),
+    connectionId: text('connection_id')
+      .notNull()
+      .references(() => salesChannelConnections.id, { onDelete: 'cascade' }),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    productId: text('product_id').references(() => products.id),
+    variantId: text('variant_id').references(() => productVariants.id),
+    externalListingId: text('external_listing_id'),
+    externalVariantId: text('external_variant_id'),
+    externalUrl: text('external_url'),
+    externalCategoryId: text('external_category_id'),
+    externalSku: text('external_sku'),
+    status: text('status').notNull().default('draft'),
+    pricingMode: text('pricing_mode').notNull().default('margin'),
+    marginBasisPoints: integer('margin_basis_points'),
+    fixedPriceCents: integer('fixed_price_cents'),
+    costSnapshotCents: integer('cost_snapshot_cents'),
+    publishedPriceCents: integer('published_price_cents'),
+    publishedStock: integer('published_stock').notNull().default(0),
+    safetyStock: integer('safety_stock').notNull().default(0),
+    validationJson: text('validation_json').notNull().default('[]'),
+    lastError: text('last_error'),
+    lastSyncedAt: text('last_synced_at'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_channel_listing_external').on(
+      table.connectionId,
+      table.externalListingId,
+      table.externalVariantId,
+    ),
+    index('idx_channel_listing_product').on(table.productId, table.variantId),
+    index('idx_channel_listing_org_status').on(
+      table.organizationId,
+      table.status,
+    ),
+  ],
+);
+
+export const salesChannelCategoryMappings = pgTable(
+  'sales_channel_category_mappings',
+  {
+    id: text('id').primaryKey(),
+    provider: text('provider').notNull(),
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => categories.id),
+    externalCategoryId: text('external_category_id').notNull(),
+    attributesJson: text('attributes_json').notNull().default('{}'),
+    updatedBy: text('updated_by')
+      .notNull()
+      .references(() => users.id),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_channel_category_mapping').on(
+      table.provider,
+      table.categoryId,
+    ),
+  ],
+);
+
+export const salesChannelOrderLinks = pgTable(
+  'sales_channel_order_links',
+  {
+    id: text('id').primaryKey(),
+    connectionId: text('connection_id')
+      .notNull()
+      .references(() => salesChannelConnections.id, { onDelete: 'cascade' }),
+    orderId: text('order_id')
+      .notNull()
+      .unique()
+      .references(() => orders.id),
+    provider: text('provider').notNull(),
+    externalOrderId: text('external_order_id').notNull(),
+    externalStatus: text('external_status').notNull(),
+    externalSnapshotJson: text('external_snapshot_json').notNull(),
+    externalUrl: text('external_url'),
+    lastSyncedAt: text('last_synced_at').notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_channel_external_order').on(
+      table.provider,
+      table.connectionId,
+      table.externalOrderId,
+    ),
+  ],
+);
+
+export const salesChannelEvents = pgTable(
+  'sales_channel_events',
+  {
+    id: text('id').primaryKey(),
+    provider: text('provider').notNull(),
+    connectionId: text('connection_id').references(
+      () => salesChannelConnections.id,
+      { onDelete: 'cascade' },
+    ),
+    externalEventId: text('external_event_id').notNull(),
+    type: text('type').notNull(),
+    signatureValid: boolean('signature_valid').notNull(),
+    status: text('status').notNull().default('received'),
+    payloadHash: text('payload_hash').notNull(),
+    payloadJson: text('payload_json').notNull(),
+    error: text('error'),
+    receivedAt: text('received_at').notNull(),
+    processedAt: text('processed_at'),
+  },
+  (table) => [
+    uniqueIndex('idx_channel_event_provider_external').on(
+      table.provider,
+      table.externalEventId,
+    ),
+    index('idx_channel_event_status').on(table.status, table.receivedAt),
+  ],
+);
+
+export const salesChannelSyncRuns = pgTable(
+  'sales_channel_sync_runs',
+  {
+    id: text('id').primaryKey(),
+    connectionId: text('connection_id')
+      .notNull()
+      .references(() => salesChannelConnections.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(),
+    status: text('status').notNull().default('running'),
+    attempted: integer('attempted').notNull().default(0),
+    succeeded: integer('succeeded').notNull().default(0),
+    failed: integer('failed').notNull().default(0),
+    cursor: text('cursor'),
+    error: text('error'),
+    startedAt: text('started_at').notNull(),
+    completedAt: text('completed_at'),
+  },
+  (table) => [index('idx_channel_sync_connection').on(table.connectionId)],
+);

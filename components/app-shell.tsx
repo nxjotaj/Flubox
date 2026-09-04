@@ -23,6 +23,7 @@ import {
   Users,
   Warehouse,
   CreditCard,
+  PlugZap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -59,6 +60,7 @@ const resellerNavigation: NavigationItem[] = [
   ['/carrinho', 'Carrinho', ShoppingBag],
   ['/favoritos', 'Favoritos', Heart],
   ['/listas', 'Minha vitrine', Boxes],
+  ['/integracoes', 'Integrações', PlugZap],
   ['/pedidos', 'Pedidos', ClipboardList],
   ['/rastreamento', 'Rastreamento', Truck],
   ['/financeiro', 'Créditos e pagamentos', CircleDollarSign],
@@ -77,6 +79,7 @@ const adminNavigation: NavigationItem[] = [
   ['/admin/disputas', 'Disputas', ShieldCheck],
   ['/admin/relatorios', 'Relatórios', BarChart3],
   ['/admin/auditoria', 'Auditoria', FileText],
+  ['/admin/integracoes', 'Integrações', PlugZap],
 ];
 
 export async function AppShell({

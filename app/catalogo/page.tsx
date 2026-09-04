@@ -192,6 +192,12 @@ export default async function CatalogPage({
                 productId={product.id}
                 initial={Boolean(product.favorited)}
               />
+              <a
+                className="catalog-action"
+                href={`/integracoes?produto=${product.id}`}
+              >
+                Anunciar em marketplace
+              </a>
               <AddToCartButton productId={product.id} />
             </article>
           ))

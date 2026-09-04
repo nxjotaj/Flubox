@@ -152,6 +152,21 @@ const definitions: Record<
       ['amount', 'Receita Flubox'],
     ],
   },
+  integracoes: {
+    title: 'Integrações multicanal',
+    description: 'Conexões, sincronizações e falhas dos canais de venda.',
+    query: `SELECT c.id,c.provider,o.display_name organization,c.display_name account,c.status,(SELECT COUNT(*) FROM sales_channel_listings l WHERE l.connection_id=c.id) listings,c.last_synced_at lastSyncedAt,c.last_error lastError,c.updated_at updatedAt FROM sales_channel_connections c JOIN organizations o ON o.id=c.organization_id ORDER BY c.updated_at DESC`,
+    columns: [
+      ['provider', 'Canal'],
+      ['organization', 'Revendedor'],
+      ['account', 'Conta'],
+      ['status', 'Status'],
+      ['listings', 'Anúncios'],
+      ['lastSyncedAt', 'Última sincronização'],
+      ['lastError', 'Erro'],
+      ['updatedAt', 'Atualização'],
+    ],
+  },
 };
 function display(key: string, value: unknown) {
   if (value == null) return '—';
