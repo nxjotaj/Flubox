@@ -6,6 +6,7 @@ import {
 } from '@/components/admin-section-workspace';
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
+import { labelFor, referenceLabel } from '@/lib/presentation';
 import {
   ArrowUpRight,
   CircleDollarSign,
@@ -199,11 +200,11 @@ export default async function AdminFinancePage() {
             cells: {
               createdAt: new Date(entry.createdAt).toLocaleString('pt-BR'),
               organization: entry.organization,
-              account: entry.account.replaceAll('_', ' '),
-              direction: entry.direction,
+              account: labelFor(entry.account),
+              direction: labelFor(entry.direction),
               amount: `${entry.direction === 'credit' ? '+' : '-'} ${money(Number(entry.amountCents))}`,
-              status: entry.status,
-              reference: `${entry.referenceType} · ${entry.referenceId}`,
+              status: labelFor(entry.status),
+              reference: referenceLabel(entry.referenceType, entry.referenceId),
             },
           }),
         )}

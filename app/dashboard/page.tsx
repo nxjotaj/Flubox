@@ -1,7 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
-import { labelFor } from '@/lib/presentation';
+import { channelLabel, labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 import {
@@ -282,7 +282,7 @@ export default async function DashboardPage() {
                   <div>
                     <strong>{order.number}</strong>
                     <small>
-                      {order.channel.replaceAll('_', ' ')} ·{' '}
+                      {channelLabel(order.channel)} ·{' '}
                       {new Date(order.createdAt).toLocaleDateString('pt-BR')}
                     </small>
                   </div>

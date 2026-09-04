@@ -1,5 +1,7 @@
 'use client';
 
+import { labelFor } from '@/lib/presentation';
+
 import {
   Area,
   AreaChart,
@@ -45,7 +47,7 @@ export function AdminReportCharts({
     revenue: Number(item.revenue),
   }));
   const distribution = statuses.slice(0, 8).map((item) => ({
-    label: item.status.replaceAll('_', ' '),
+    label: labelFor(item.status),
     total: Number(item.total),
   }));
 

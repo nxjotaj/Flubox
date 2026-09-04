@@ -3,6 +3,7 @@ import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
+import { labelFor } from '@/lib/presentation';
 import { PackageSearch, TriangleAlert, Warehouse } from 'lucide-react';
 import {
   AdminSectionWorkspace,
@@ -102,7 +103,7 @@ export default async function StockPage() {
               physical: String(row.physical),
               reserved: String(row.reserved),
               available: String(available),
-              status: row.status.replaceAll('_', ' '),
+              status: labelFor(row.status),
             },
           };
         })}

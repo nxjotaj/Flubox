@@ -6,6 +6,7 @@ import {
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
+import { channelLabel, labelFor } from '@/lib/presentation';
 import { ShoppingCart } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
 
@@ -63,8 +64,8 @@ export default async function OrdersPage() {
             searchText: `${order.number} ${order.status} ${order.channel} ${order.counterpart}`,
             cells: {
               number: order.number,
-              status: order.status.replaceAll('_', ' '),
-              channel: order.channel.replaceAll('_', ' '),
+              status: labelFor(order.status),
+              channel: channelLabel(order.channel),
               counterpart: order.counterpart,
               total: (Number(order.totalCents) / 100).toLocaleString('pt-BR', {
                 style: 'currency',

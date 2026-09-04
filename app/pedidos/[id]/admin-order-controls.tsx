@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { labelFor } from '@/lib/presentation';
 
 const states = [
   'awaiting_payment',
@@ -75,7 +76,7 @@ export function AdminOrderControls({
             <select name="status" defaultValue={status}>
               {states.map((item) => (
                 <option value={item} key={item}>
-                  {item.replaceAll('_', ' ')}
+                  {labelFor(item)}
                 </option>
               ))}
             </select>

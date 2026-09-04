@@ -1,7 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { BrandLogo } from '@/components/brand-logo';
 import { getD1 } from '@/db';
-import { labelFor } from '@/lib/presentation';
+import { channelLabel, labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { getSlaStatus } from '@/modules/logistics/sla';
 import { notFound, redirect } from 'next/navigation';
@@ -127,7 +127,7 @@ export default async function OrderDetail({
         <span className="eyebrow">{labelFor(order.status)}</span>
         <h1>{order.number}</h1>
         <p>
-          {order.channel} ·{' '}
+          {channelLabel(order.channel)} ·{' '}
           {(order.totalCents / 100).toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL',
@@ -276,9 +276,10 @@ export default async function OrderDetail({
             <article key={`e${index}`}>
               <time>{new Date(event.createdAt).toLocaleString('pt-BR')}</time>
               <div>
-                <strong>{event.type}</strong>
+                <strong>{labelFor(event.type, 'Atualização do pedido')}</strong>
                 <small>
-                  {event.fromStatus ?? 'início'} → {event.toStatus ?? 'evento'}
+                  {labelFor(event.fromStatus, 'Início')} →{' '}
+                  {labelFor(event.toStatus, 'Atualização')}
                 </small>
               </div>
             </article>

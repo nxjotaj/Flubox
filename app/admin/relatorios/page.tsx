@@ -12,6 +12,7 @@ import { ExportTableButton } from '@/components/table-tools';
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
 import { AdminReportCharts } from '@/components/report-charts';
+import { labelFor } from '@/lib/presentation';
 
 export const dynamic = 'force-dynamic';
 const money = (value: number) =>
@@ -169,7 +170,7 @@ export default async function AdminReportsPage() {
                 <tr key={row.status}>
                   <td>
                     <span className={`status-pill status-${row.status}`}>
-                      {row.status.replaceAll('_', ' ')}
+                      {labelFor(row.status)}
                     </span>
                   </td>
                   <td>{row.total}</td>
@@ -197,7 +198,7 @@ export default async function AdminReportsPage() {
             <tbody>
               {catalog.results.map((row) => (
                 <tr key={row.status}>
-                  <td>{row.status}</td>
+                  <td>{labelFor(row.status)}</td>
                   <td>{row.products}</td>
                   <td>{row.stock}</td>
                 </tr>
@@ -223,8 +224,8 @@ export default async function AdminReportsPage() {
             <tbody>
               {organizations.results.map((row, index) => (
                 <tr key={index}>
-                  <td>{row.type}</td>
-                  <td>{row.status}</td>
+                  <td>{labelFor(row.type)}</td>
+                  <td>{labelFor(row.status)}</td>
                   <td>{row.total}</td>
                 </tr>
               ))}

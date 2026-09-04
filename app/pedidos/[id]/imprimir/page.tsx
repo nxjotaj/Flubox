@@ -2,6 +2,7 @@ import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { BrandLogo } from '@/components/brand-logo';
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
+import { channelLabel } from '@/lib/presentation';
 import { notFound, redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 export default async function PrintOrderPage({
@@ -69,7 +70,7 @@ export default async function PrintOrderPage({
         </div>
         <div>
           <small>Canal de origem</small>
-          <strong>{order.channel.replaceAll('_', ' ')}</strong>
+          <strong>{channelLabel(order.channel)}</strong>
         </div>
         <div>
           <small>Referência externa</small>

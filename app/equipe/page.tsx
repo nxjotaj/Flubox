@@ -2,6 +2,7 @@ import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
+import { labelFor } from '@/lib/presentation';
 import { BrandLogo } from '@/components/brand-logo';
 import { InviteForm } from './invite-form';
 import { MemberActions } from './member-actions';
@@ -62,10 +63,10 @@ export default async function TeamPage() {
               <div>
                 <strong>{member.name}</strong>
                 <small>
-                  {member.email} · {member.role}
+                  {member.email} · {labelFor(member.roleKey)}
                 </small>
               </div>
-              <b>{member.status}</b>
+              <b>{labelFor(member.status)}</b>
               {account.role.endsWith('_owner') &&
                 member.userId !== account.user.id && (
                   <MemberActions memberId={member.id} />
@@ -91,7 +92,7 @@ export default async function TeamPage() {
                   {new Date(invite.expiresAt).toLocaleDateString('pt-BR')}
                 </small>
               </div>
-              <b>{invite.status}</b>
+              <b>{labelFor(invite.status)}</b>
             </article>
           ))}
         </div>

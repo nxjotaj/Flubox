@@ -9,6 +9,7 @@ import {
 import { getD1 } from '@/db';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
+import { channelLabel } from '@/lib/presentation';
 export const dynamic = 'force-dynamic';
 export default async function ReportsPage({
   searchParams,
@@ -136,7 +137,7 @@ export default async function ReportsPage({
           <article>
             <small>Reputação</small>
             <strong>{(reputation.score / 100).toFixed(1)}%</strong>
-            <span>cálculo explicável</span>
+            <span>Índice de desempenho operacional</span>
           </article>
         )}
       </div>
@@ -148,7 +149,7 @@ export default async function ReportsPage({
           ) : (
             channels.results.map((row) => (
               <article key={row.channel}>
-                <strong>{row.channel}</strong>
+                <strong>{channelLabel(row.channel)}</strong>
                 <small>
                   {row.total} pedido(s) ·{' '}
                   {(row.volume / 100).toLocaleString('pt-BR', {

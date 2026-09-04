@@ -3,6 +3,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { EntityActions } from './entity-actions';
 import { ModerationActions } from '../../admin-actions';
@@ -141,9 +142,9 @@ export default async function AdminEntityPage({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <strong>{document.type.replaceAll('_', ' ')}</strong>
+                  <strong>{labelFor(document.type)}</strong>
                   <small>
-                    {document.fileName} · {document.status}
+                    {document.fileName} · {labelFor(document.status)}
                   </small>
                 </a>
               ))}

@@ -11,7 +11,7 @@ import {
   type AdminWorkspaceRow,
 } from '@/components/admin-section-workspace';
 import { getD1 } from '@/db';
-import { labelFor } from '@/lib/presentation';
+import { labelFor, referenceLabel } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
@@ -137,11 +137,11 @@ export default async function FinancePage() {
             status: entry.status,
             searchText: `${entry.account} ${entry.direction} ${entry.status} ${entry.referenceType} ${entry.referenceId}`,
             cells: {
-              account: entry.account.replaceAll('_', ' '),
-              direction: entry.direction,
+              account: labelFor(entry.account),
+              direction: labelFor(entry.direction),
               amount: `${entry.direction === 'credit' ? '+' : '-'} ${(Number(entry.amountCents) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
-              status: entry.status.replaceAll('_', ' '),
-              reference: `${entry.referenceType} · ${entry.referenceId}`,
+              status: labelFor(entry.status),
+              reference: referenceLabel(entry.referenceType, entry.referenceId),
               createdAt: new Date(entry.createdAt).toLocaleString('pt-BR'),
             },
           }),

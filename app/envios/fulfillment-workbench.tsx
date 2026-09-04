@@ -9,6 +9,7 @@ import {
   Send,
   UserRoundCog,
 } from 'lucide-react';
+import { labelFor } from '@/lib/presentation';
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -224,7 +225,7 @@ export function FulfillmentWorkbench({
               <header>
                 <Link href={`/pedidos/${row.id}`}>{row.number}</Link>
                 <span className={`status-pill status-${row.status}`}>
-                  {row.status.replaceAll('_', ' ')}
+                  {labelFor(row.status)}
                 </span>
               </header>
               <strong>{row.itemSummary}</strong>

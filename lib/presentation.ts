@@ -11,9 +11,17 @@ const labels: Record<string, string> = {
   preparing: 'Em preparação',
   ready_to_ship: 'Pronto para envio',
   awaiting_payment: 'Aguardando pagamento',
+  created: 'Criado',
+  awaiting_documents: 'Aguardando documentos',
+  paid_awaiting_documents: 'Pago — aguardando documentos',
+  ready_for_supplier: 'Liberado para o fornecedor',
   payment_expired: 'Pagamento expirado',
   completed: 'Concluído',
   refunded: 'Reembolsado',
+  disputed: 'Em disputa',
+  returning: 'Em devolução',
+  logistics_failed: 'Falha logística',
+  lost: 'Extraviado',
   supplier_owner: 'Proprietário do fornecedor',
   reseller_owner: 'Proprietário revendedor',
   platform_admin: 'Administrador da plataforma',
@@ -38,6 +46,61 @@ const labels: Record<string, string> = {
   under_review: 'Em análise',
   resolved: 'Resolvida',
   closed: 'Encerrada',
+  posted: 'Contabilizado',
+  reversed: 'Estornado',
+  paid: 'Pago',
+  scheduled: 'Agendado',
+  failed: 'Falhou',
+  credit: 'Crédito',
+  debit: 'Débito',
+  sales_receivable: 'Valores a receber',
+  supplier_payable: 'Valores a repassar',
+  commission_revenue: 'Receita de comissão',
+  payment_processing_fee: 'Tarifa de pagamento',
+  refunds_payable: 'Reembolsos',
+  cash: 'Disponível',
+  order: 'Pedido',
+  payout: 'Repasse',
+  refund: 'Reembolso',
+  subscription: 'Assinatura',
+  manual_expense: 'Ajuste financeiro',
+  internal: 'Catálogo Flubox',
+  internal_catalog: 'Catálogo Flubox',
+  auditoria_e2e: 'Venda de teste',
+  mercado_livre: 'Mercado Livre',
+  shopee: 'Shopee',
+  supplier: 'Fornecedor',
+  reseller: 'Revendedor',
+  platform: 'Plataforma',
+  return: 'Devolução',
+  cancellation: 'Cancelamento',
+  complaint: 'Reclamação',
+  question: 'Pergunta',
+  pending_review: 'Em análise',
+  archived: 'Arquivado',
+  inactive: 'Inativo',
+  onboarding: 'Cadastro em andamento',
+  processing: 'Processando',
+  available: 'Disponível',
+  accepted: 'Aceito',
+  cnpj_card: 'Comprovante de CNPJ',
+  articles_of_association: 'Contrato social',
+  identity: 'Documento de identidade',
+  address_proof: 'Comprovante de endereço',
+  order_created: 'Pedido criado',
+  payment_confirmed: 'Pagamento confirmado',
+  shipment_created: 'Envio criado',
+  tracking_updated: 'Rastreamento atualizado',
+  'order.created': 'Pedido criado',
+  'marketplace.order_imported': 'Pedido importado do marketplace',
+  'payment.confirmed': 'Pagamento confirmado',
+  'payment.expired': 'Pagamento expirado',
+  'document.added': 'Documento adicionado',
+  'documents.completed': 'Documentação concluída',
+  'inventory.reservation_failed': 'Falha na reserva de estoque',
+  'logistics.barcode_shipped': 'Envio confirmado por leitura',
+  'admin.intervention': 'Intervenção administrativa',
+  'post_sale.opened': 'Atendimento pós-venda aberto',
 };
 
 export function labelFor(
@@ -45,8 +108,16 @@ export function labelFor(
   fallback = 'Não informado',
 ) {
   if (!value) return fallback;
-  return (
-    labels[value] ??
-    value.replaceAll('_', ' ').replace(/^./, (letter) => letter.toUpperCase())
-  );
+  return labels[value.toLowerCase()] ?? fallback;
 }
+
+export const channelLabel = (value: string | null | undefined) =>
+  labelFor(value, 'Canal não identificado');
+
+export const referenceLabel = (
+  type: string | null | undefined,
+  id: string | null | undefined,
+) => {
+  const identifier = id ? id.slice(0, 8).toUpperCase() : 'sem número';
+  return `${labelFor(type, 'Registro')} ${identifier}`;
+};

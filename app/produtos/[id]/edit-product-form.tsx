@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { labelFor } from '@/lib/presentation';
 
 type Variant = {
   id?: string;
@@ -114,7 +115,7 @@ export function EditProductForm({
     setBusy(false);
     setMessage(
       response.ok
-        ? `Produto atualizado: ${result.qualityScore}/100 · ${result.status}.`
+        ? `Produto atualizado: ${result.qualityScore}/100 · ${labelFor(result.status)}.`
         : (result.error ?? 'Falha ao atualizar.'),
     );
     if (response.ok) router.refresh();
