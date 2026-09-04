@@ -36,6 +36,7 @@ import {
   type PermissionKey,
   type RoleKey,
 } from '@/modules/identity/permissions';
+import { labelFor } from '@/lib/presentation';
 
 type NavigationItem = [href: string, label: string, icon: LucideIcon];
 
@@ -258,7 +259,7 @@ export async function AppShell({
             </span>
             <div>
               <strong>{account.user.name ?? account.user.email}</strong>
-              <small>{account.role.replaceAll('_', ' ')}</small>
+              <small>{labelFor(account.role)}</small>
             </div>
           </div>
         </header>

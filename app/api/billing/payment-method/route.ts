@@ -19,6 +19,7 @@ const schema = z.object({
     .min(new Date().getFullYear())
     .max(new Date().getFullYear() + 20),
   cvv: z.string().regex(/^\d{3,4}$/),
+  mode: z.enum(['activate', 'replace']).default('activate'),
 });
 
 export async function POST(request: Request) {
@@ -78,25 +79,42 @@ export async function POST(request: Request) {
           now,
           now,
         ),
+      ...(parsed.data.mode === 'activate'
+        ? [
+            getD1()
+              .prepare(
+                `UPDATE subscriptions SET status='active',provider='development',external_reference=?,current_period_start=?,current_period_end=?,updated_at=? WHERE organization_id=?`,
+              )
+              .bind(
+                `dev_subscription_${account.organization.id}`,
+                now,
+                periodEnd.toISOString(),
+                now,
+                account.organization.id,
+              ),
+            getD1()
+              .prepare(
+                `UPDATE organizations SET status='active',updated_at=? WHERE id=?`,
+              )
+              .bind(now, account.organization.id),
+          ]
+        : []),
       getD1()
         .prepare(
-          `UPDATE subscriptions SET status='active',provider='development',external_reference=?,current_period_start=?,current_period_end=?,updated_at=? WHERE organization_id=?`,
-        )
-        .bind(
-          `dev_subscription_${account.organization.id}`,
-          now,
-          periodEnd.toISOString(),
-          now,
-          account.organization.id,
-        ),
-      getD1()
-        .prepare(
-          `INSERT INTO subscription_events (id,subscription_id,type,amount_cents,external_reference,reason,occurred_at,created_at) SELECT ?,id,'payment_succeeded',monthly_amount_cents,?,?,?,? FROM subscriptions WHERE organization_id=?`,
+          `INSERT INTO subscription_events (id,subscription_id,type,amount_cents,external_reference,reason,occurred_at,created_at) SELECT ?,id,?,CASE WHEN ?='payment_succeeded' THEN monthly_amount_cents ELSE NULL END,?,?,?,? FROM subscriptions WHERE organization_id=?`,
         )
         .bind(
           crypto.randomUUID(),
+          parsed.data.mode === 'activate'
+            ? 'payment_succeeded'
+            : 'payment_method_updated',
+          parsed.data.mode === 'activate'
+            ? 'payment_succeeded'
+            : 'payment_method_updated',
           `dev_invoice_${Date.now()}`,
-          'Cobrança recorrente aprovada no ambiente de desenvolvimento',
+          parsed.data.mode === 'activate'
+            ? 'Cobrança recorrente aprovada no ambiente de desenvolvimento'
+            : 'Forma de cobrança atualizada pelo fornecedor',
           now,
           now,
           account.organization.id,

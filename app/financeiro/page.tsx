@@ -11,6 +11,7 @@ import {
   type AdminWorkspaceRow,
 } from '@/components/admin-section-workspace';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
@@ -101,7 +102,7 @@ export default async function FinancePage() {
         <article>
           <ReceiptText />
           <small>Assinatura</small>
-          <strong>{subscription?.status ?? 'não configurada'}</strong>
+          <strong>{labelFor(subscription?.status, 'Não configurada')}</strong>
           {subscription && (
             <span>
               {(subscription.amountCents / 100).toLocaleString('pt-BR', {

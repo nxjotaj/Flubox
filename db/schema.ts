@@ -315,6 +315,8 @@ export const subscriptions = pgTable('subscriptions', {
   externalReference: text('external_reference'),
   currentPeriodStart: text('current_period_start'),
   currentPeriodEnd: text('current_period_end'),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  cancelledAt: text('cancelled_at'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });

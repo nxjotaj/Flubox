@@ -1,6 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 import {
@@ -288,7 +289,7 @@ export default async function DashboardPage() {
                   <span
                     className={`status-pill status-${String(order.status)}`}
                   >
-                    {order.status.replaceAll('_', ' ')}
+                    {labelFor(order.status)}
                   </span>
                   <b>{money(order.totalCents)}</b>
                 </a>

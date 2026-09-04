@@ -1,5 +1,6 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 import {
@@ -185,7 +186,7 @@ export default async function IntegrationsPage({
                 <span
                   className={`status-pill status-${connection?.status ?? 'disconnected'}`}
                 >
-                  {connection?.status ?? 'desconectado'}
+                  {connection ? labelFor(connection.status) : 'Desconectado'}
                 </span>
                 {connection?.status === 'active' ? (
                   <div className="channel-actions">
@@ -386,7 +387,7 @@ export default async function IntegrationsPage({
                 </div>
                 <strong>{listing.stock} un.</strong>
                 <span className={`status-pill status-${listing.status}`}>
-                  {listing.status}
+                  {labelFor(listing.status)}
                 </span>
                 <div className="listing-actions">
                   {listing.externalUrl && (
@@ -453,7 +454,7 @@ export default async function IntegrationsPage({
                   <strong>{alert.type.replaceAll('_', ' ')}</strong>
                   <small>
                     {new Date(alert.receivedAt).toLocaleString('pt-BR')} ·{' '}
-                    {alert.status}
+                    {labelFor(alert.status)}
                   </small>
                 </div>
               </article>

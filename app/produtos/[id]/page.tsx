@@ -1,6 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { notFound, redirect } from 'next/navigation';
 import { EditProductForm } from './edit-product-form';
@@ -73,7 +74,7 @@ export default async function EditProductPage({
       <section className="page-heading">
         <div>
           <span className="page-kicker">
-            {product.status} · qualidade {product.qualityScore}/100
+            {labelFor(product.status)} · qualidade {product.qualityScore}/100
           </span>
           <h1>Editar produto</h1>
           <p>

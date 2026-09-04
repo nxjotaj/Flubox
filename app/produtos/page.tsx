@@ -1,5 +1,6 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 import { BrandLogo } from '@/components/brand-logo';
@@ -107,7 +108,7 @@ export default async function ProductsPage() {
                   })}
                 </span>
                 <b>
-                  {product.qualityScore}/100 · {product.status}
+                  {product.qualityScore}/100 · {labelFor(product.status)}
                 </b>
                 <ProductActions id={product.id} />
               </article>

@@ -1,6 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 import { MapPin, PackageCheck, Truck } from 'lucide-react';
@@ -46,7 +47,7 @@ export default async function TrackingPage() {
                   <strong>{row.supplier}</strong>
                 </div>
                 <span className={`status-pill status-${row.status}`}>
-                  {row.status.replaceAll('_', ' ')}
+                  {labelFor(row.status)}
                 </span>
               </header>
               <div className="tracking-progress">

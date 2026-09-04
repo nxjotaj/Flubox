@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const now = new Date();
     const rows = await getD1()
       .prepare(
-        `SELECT s.id,s.organization_id organizationId,s.status,s.current_period_end periodEnd,s.grace_period_days graceDays FROM subscriptions s JOIN organizations o ON o.id=s.organization_id WHERE o.type='supplier' AND s.current_period_end IS NOT NULL AND s.status IN ('active','grace_period','past_due')`,
+        `SELECT s.id,s.organization_id organizationId,s.status,s.current_period_end periodEnd,s.grace_period_days graceDays,s.cancel_at_period_end cancelAtPeriodEnd FROM subscriptions s JOIN organizations o ON o.id=s.organization_id WHERE o.type='supplier' AND s.current_period_end IS NOT NULL AND s.status IN ('active','grace_period','past_due')`,
       )
       .all<{
         id: string;
@@ -23,12 +23,40 @@ export async function POST(request: Request) {
         status: string;
         periodEnd: string;
         graceDays: number;
+        cancelAtPeriodEnd: boolean;
       }>();
     let suspended = 0;
     let gracePeriod = 0;
+    let cancelled = 0;
     for (const row of rows.results) {
       const periodEnd = new Date(row.periodEnd);
       if (now <= periodEnd) continue;
+      if (row.cancelAtPeriodEnd) {
+        await getD1().batch([
+          getD1()
+            .prepare(
+              `UPDATE subscriptions SET status='cancelled',cancel_at_period_end=false,cancelled_at=?,updated_at=? WHERE id=?`,
+            )
+            .bind(now.toISOString(), now.toISOString(), row.id),
+          getD1()
+            .prepare(
+              `UPDATE organizations SET status='suspended',updated_at=? WHERE id=?`,
+            )
+            .bind(now.toISOString(), row.organizationId),
+          getD1()
+            .prepare(
+              `INSERT INTO subscription_events (id,subscription_id,type,reason,occurred_at,created_at) VALUES (?,?,'subscription_cancelled','Fim do período contratado',?,?)`,
+            )
+            .bind(
+              crypto.randomUUID(),
+              row.id,
+              now.toISOString(),
+              now.toISOString(),
+            ),
+        ]);
+        cancelled++;
+        continue;
+      }
       const graceEnd = new Date(periodEnd.getTime() + row.graceDays * 86400000);
       if (now > graceEnd) {
         await getD1().batch([
@@ -112,6 +140,7 @@ export async function POST(request: Request) {
           evaluated: rows.results.length,
           gracePeriod,
           suspended,
+          cancelled,
         }),
         now.toISOString(),
       )
@@ -120,6 +149,7 @@ export async function POST(request: Request) {
       evaluated: rows.results.length,
       gracePeriod,
       suspended,
+      cancelled,
       requestId,
     });
   } catch (error) {

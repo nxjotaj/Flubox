@@ -1,6 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { AppShell } from '@/components/app-shell';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { redirect } from 'next/navigation';
 import {
@@ -223,7 +224,7 @@ export default async function AdminPage() {
                   </small>
                 </div>
                 <span className={`status-pill status-${String(order.status)}`}>
-                  {order.status.replaceAll('_', ' ')}
+                  {labelFor(order.status)}
                 </span>
                 <b>{money(order.totalCents)}</b>
               </a>
@@ -249,7 +250,7 @@ export default async function AdminPage() {
                     {new Date(org.createdAt).toLocaleDateString('pt-BR')}
                   </small>
                 </div>
-                <b>{org.status}</b>
+                <b>{labelFor(org.status)}</b>
               </article>
             ))}
           </div>

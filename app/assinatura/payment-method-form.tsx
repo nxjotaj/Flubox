@@ -2,7 +2,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function PaymentMethodForm() {
+export function PaymentMethodForm({
+  mode = 'activate',
+  onSuccess,
+}: {
+  mode?: 'activate' | 'replace';
+  onSuccess?: () => void;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -22,6 +28,7 @@ export function PaymentMethodForm() {
         expiryMonth: Number(value('expiryMonth')),
         expiryYear: Number(value('expiryYear')),
         cvv: value('cvv'),
+        mode,
       }),
     });
     const result = (await response.json()) as {
@@ -31,13 +38,14 @@ export function PaymentMethodForm() {
     };
     setMessage(
       response.ok
-        ? `Assinatura ativa com ${result.brand} final ${result.lastFour}.`
+        ? `${mode === 'replace' ? 'Cartão atualizado' : 'Assinatura ativa'} com ${result.brand} final ${result.lastFour}.`
         : (result.error ?? 'Falha na ativação.'),
     );
     setBusy(false);
     if (response.ok) {
       router.refresh();
-      setTimeout(() => router.push('/dashboard'), 700);
+      onSuccess?.();
+      if (mode === 'activate') setTimeout(() => router.push('/dashboard'), 700);
     }
   }
   return (
@@ -91,7 +99,11 @@ export function PaymentMethodForm() {
         </label>
       </div>
       <button disabled={busy}>
-        {busy ? 'Tokenizando…' : 'Ativar assinatura mensal'}
+        {busy
+          ? 'Processando…'
+          : mode === 'replace'
+            ? 'Salvar novo cartão'
+            : 'Ativar assinatura mensal'}
       </button>
       <small>
         Ambiente de desenvolvimento: nenhum número ou CVV é persistido. Em

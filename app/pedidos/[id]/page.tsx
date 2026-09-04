@@ -1,6 +1,7 @@
 import { requireAuthenticatedUser } from '@/app/chatgpt-auth';
 import { BrandLogo } from '@/components/brand-logo';
 import { getD1 } from '@/db';
+import { labelFor } from '@/lib/presentation';
 import { getAccountContext } from '@/modules/identity/service';
 import { getSlaStatus } from '@/modules/logistics/sla';
 import { notFound, redirect } from 'next/navigation';
@@ -123,7 +124,7 @@ export default async function OrderDetail({
         <a href="/pedidos">Todos os pedidos</a>
       </header>
       <section>
-        <span className="eyebrow">{order.status}</span>
+        <span className="eyebrow">{labelFor(order.status)}</span>
         <h1>{order.number}</h1>
         <p>
           {order.channel} ·{' '}
@@ -267,7 +268,7 @@ export default async function OrderDetail({
               <time>{new Date(event.occurredAt).toLocaleString('pt-BR')}</time>
               <div>
                 <strong>{event.description}</strong>
-                <small>{event.location ?? event.status}</small>
+                <small>{event.location ?? labelFor(event.status)}</small>
               </div>
             </article>
           ))}
