@@ -2,7 +2,7 @@
 
 import { SyntheticEvent, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowRight, LoaderCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, LoaderCircle, MailPlus } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,21 @@ export function LoginForm() {
   const search = useSearchParams();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(
+    search.get('confirmation') === 'invalid'
+      ? 'Este link de confirmação é inválido ou expirou. Solicite um novo link.'
+      : '',
+  );
+  const [messageKind, setMessageKind] = useState<'error' | 'success'>('error');
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [resending, setResending] = useState(false);
+  const [emailValue, setEmailValue] = useState('');
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setMessage('');
+    setPendingEmail('');
     const form = new FormData(event.currentTarget);
     const field = (name: string) => {
       const value = form.get(name);
@@ -33,14 +42,24 @@ export function LoginForm() {
         : await supabase.auth.signUp({
             email,
             password,
-            options: { data: { full_name: fullName } },
+            options: {
+              data: { full_name: fullName },
+              emailRedirectTo: `${window.location.origin}/auth/continue`,
+            },
           });
     if (result.error) {
+      const confirmationPending = result.error.message
+        .toLowerCase()
+        .includes('email not confirmed');
       setMessage(
         result.error.message === 'Invalid login credentials'
           ? 'E-mail ou senha inválidos.'
-          : result.error.message,
+          : confirmationPending
+            ? 'Seu e-mail ainda não foi confirmado.'
+            : result.error.message,
       );
+      setMessageKind('error');
+      if (confirmationPending) setPendingEmail(email);
       setPending(false);
       return;
     }
@@ -48,6 +67,8 @@ export function LoginForm() {
       setMessage(
         'Confira seu e-mail para confirmar o cadastro antes de entrar.',
       );
+      setMessageKind('success');
+      setPendingEmail(email);
       setPending(false);
       return;
     }
@@ -61,19 +82,50 @@ export function LoginForm() {
     window.location.assign(safeDestination);
   }
 
+  async function resendConfirmation() {
+    const email = (pendingEmail || emailValue).trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      setMessage('Informe o e-mail da conta para reenviar a confirmação.');
+      setMessageKind('error');
+      return;
+    }
+    setResending(true);
+    const response = await fetch('/api/auth/resend-confirmation', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const result = (await response.json()) as { error?: string };
+    setMessage(
+      response.ok
+        ? 'Novo link enviado. Confira também a caixa de spam.'
+        : (result.error ?? 'Não foi possível reenviar o link.'),
+    );
+    setMessageKind(response.ok ? 'success' : 'error');
+    setResending(false);
+  }
+
   return (
     <div className="login-box">
       <div className="auth-tabs" role="tablist" aria-label="Tipo de acesso">
         <button
           className={mode === 'login' ? 'active' : ''}
-          onClick={() => setMode('login')}
+          onClick={() => {
+            setMode('login');
+            setMessage('');
+            setPendingEmail('');
+          }}
           type="button"
         >
           Entrar
         </button>
         <button
           className={mode === 'register' ? 'active' : ''}
-          onClick={() => setMode('register')}
+          onClick={() => {
+            setMode('register');
+            setMessage('');
+            setPendingEmail('');
+          }}
           type="button"
         >
           Criar conta
@@ -99,6 +151,8 @@ export function LoginForm() {
             name="email"
             type="email"
             autoComplete="email"
+            value={emailValue}
+            onChange={(event) => setEmailValue(event.target.value)}
             required
           />
         </label>
@@ -116,9 +170,26 @@ export function LoginForm() {
           />
         </label>
         {message && (
-          <Alert variant="destructive">
+          <Alert variant={messageKind === 'error' ? 'destructive' : 'default'}>
+            {messageKind === 'success' && <CheckCircle2 />}
             <AlertDescription>{message}</AlertDescription>
           </Alert>
+        )}
+        {(pendingEmail || mode === 'login') && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={resending}
+            onClick={() => void resendConfirmation()}
+            className="resend-confirmation"
+          >
+            {resending ? (
+              <LoaderCircle className="animate-spin" />
+            ) : (
+              <MailPlus />
+            )}
+            {resending ? 'Reenviando…' : 'Reenviar link de confirmação'}
+          </Button>
         )}
         <Button
           type="submit"

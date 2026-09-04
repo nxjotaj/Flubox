@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/app/chatgpt-auth';
 import { getAccountContext } from '@/modules/identity/service';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
-  const origin = new URL(request.url).origin;
+  const requestUrl = new URL(request.url);
+  const origin = requestUrl.origin;
+  const code = requestUrl.searchParams.get('code');
+  if (code) {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      const destination = new URL('/entrar', origin);
+      destination.searchParams.set('confirmation', 'invalid');
+      return NextResponse.redirect(destination, 303);
+    }
+  }
   const user = await getAuthenticatedUser();
 
   if (!user) {
