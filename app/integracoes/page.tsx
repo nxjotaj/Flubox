@@ -451,7 +451,9 @@ export default async function IntegrationsPage({
               <article key={`${alert.receivedAt}-${index}`}>
                 <AlertTriangle />
                 <div>
-                  <strong>{labelFor(alert.type, 'Alerta de integração')}</strong>
+                  <strong>
+                    {labelFor(alert.type, 'Alerta de integração')}
+                  </strong>
                   <small>
                     {new Date(alert.receivedAt).toLocaleString('pt-BR')} ·{' '}
                     {labelFor(alert.status)}
