@@ -13,6 +13,9 @@ export const PERMISSIONS = {
   'audit.view': 'Visualizar auditoria',
   'settings.manage': 'Gerenciar configurações',
   'integrations.manage': 'Conectar canais e gerenciar anúncios',
+  'assistant.use': 'Usar o Assistente Flubox',
+  'assistant.reports': 'Gerar relatórios pelo assistente',
+  'assistant.manage': 'Administrar o Assistente Flubox',
 } as const;
 
 export type PermissionKey = keyof typeof PERMISSIONS;
@@ -29,19 +32,28 @@ export const ROLE_PERMISSION_MAP = {
     'fulfillment.manage',
     'payments.view',
     'audit.view',
+    'assistant.use',
+    'assistant.reports',
   ],
-  supplier_member: ['organization.view', 'products.view', 'orders.view'],
+  supplier_member: [
+    'organization.view',
+    'products.view',
+    'orders.view',
+    'assistant.use',
+  ],
   supplier_operator_1: [
     'organization.view',
     'orders.view',
     'fulfillment.view',
     'fulfillment.manage',
+    'assistant.use',
   ],
   supplier_operator_2: [
     'organization.view',
     'orders.view',
     'fulfillment.view',
     'fulfillment.manage',
+    'assistant.use',
   ],
   reseller_owner: [
     'organization.view',
@@ -51,12 +63,15 @@ export const ROLE_PERMISSION_MAP = {
     'orders.manage',
     'payments.view',
     'integrations.manage',
+    'assistant.use',
+    'assistant.reports',
   ],
   reseller_member: [
     'organization.view',
     'products.view',
     'orders.view',
     'orders.manage',
+    'assistant.use',
   ],
   platform_admin: Object.keys(PERMISSIONS) as PermissionKey[],
 } satisfies Record<string, PermissionKey[]>;

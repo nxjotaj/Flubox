@@ -1511,3 +1511,175 @@ export const salesChannelSyncRuns = pgTable(
   },
   (table) => [index('idx_channel_sync_connection').on(table.connectionId)],
 );
+
+export const assistantOrganizationSettings = pgTable(
+  'assistant_organization_settings',
+  {
+    organizationId: text('organization_id')
+      .primaryKey()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    enabled: boolean('enabled').notNull().default(true),
+    dailyLimit: integer('daily_limit'),
+    retentionDays: integer('retention_days').notNull().default(90),
+    updatedBy: text('updated_by').references(() => users.id),
+    updatedAt: text('updated_at').notNull(),
+  },
+);
+
+export const assistantConversations = pgTable(
+  'assistant_conversations',
+  {
+    id: text('id').primaryKey(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    status: text('status', { enum: ['active', 'archived'] })
+      .notNull()
+      .default('active'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deletedAt: text('deleted_at'),
+  },
+  (table) => [
+    index('idx_assistant_conversations_owner').on(
+      table.organizationId,
+      table.userId,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const assistantMessages = pgTable(
+  'assistant_messages',
+  {
+    id: text('id').primaryKey(),
+    conversationId: text('conversation_id')
+      .notNull()
+      .references(() => assistantConversations.id, { onDelete: 'cascade' }),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    role: text('role', { enum: ['user', 'assistant'] }).notNull(),
+    content: text('content').notNull(),
+    sourcesJson: text('sources_json').notNull().default('[]'),
+    feedback: text('feedback', { enum: ['helpful', 'unhelpful'] }),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_assistant_messages_conversation').on(
+      table.conversationId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const assistantRuns = pgTable(
+  'assistant_runs',
+  {
+    id: text('id').primaryKey(),
+    conversationId: text('conversation_id').references(
+      () => assistantConversations.id,
+      { onDelete: 'set null' },
+    ),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    status: text('status').notNull(),
+    toolsJson: text('tools_json').notNull().default('[]'),
+    inputTokens: integer('input_tokens').notNull().default(0),
+    outputTokens: integer('output_tokens').notNull().default(0),
+    durationMs: integer('duration_ms').notNull().default(0),
+    errorCode: text('error_code'),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_assistant_runs_org_created').on(
+      table.organizationId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const assistantUsage = pgTable(
+  'assistant_usage',
+  {
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    usageDate: text('usage_date').notNull(),
+    messageCount: integer('message_count').notNull().default(0),
+    inputTokens: integer('input_tokens').notNull().default(0),
+    outputTokens: integer('output_tokens').notNull().default(0),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.organizationId, table.userId, table.usageDate],
+    }),
+    index('idx_assistant_usage_org_date').on(
+      table.organizationId,
+      table.usageDate,
+    ),
+  ],
+);
+
+export const assistantSuggestions = pgTable(
+  'assistant_suggestions',
+  {
+    id: text('id').primaryKey(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id').references(() => users.id, {
+      onDelete: 'cascade',
+    }),
+    category: text('category').notNull(),
+    priority: text('priority').notNull(),
+    title: text('title').notNull(),
+    explanation: text('explanation').notNull(),
+    recommendation: text('recommendation').notNull(),
+    sourceReference: text('source_reference').notNull(),
+    actionHref: text('action_href'),
+    expiresAt: text('expires_at').notNull(),
+    dismissedAt: text('dismissed_at'),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_assistant_suggestions_org_active').on(
+      table.organizationId,
+      table.dismissedAt,
+      table.expiresAt,
+    ),
+  ],
+);
+
+export const assistantKnowledgeDocuments = pgTable(
+  'assistant_knowledge_documents',
+  {
+    id: text('id').primaryKey(),
+    title: text('title').notNull(),
+    category: text('category').notNull(),
+    content: text('content').notNull(),
+    version: integer('version').notNull().default(1),
+    active: boolean('active').notNull().default(true),
+    createdBy: text('created_by').references(() => users.id),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [index('idx_assistant_knowledge_active').on(table.active)],
+);

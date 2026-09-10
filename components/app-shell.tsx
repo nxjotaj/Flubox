@@ -24,6 +24,7 @@ import {
   Warehouse,
   CreditCard,
   PlugZap,
+  Sparkles,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -37,6 +38,7 @@ import {
   type RoleKey,
 } from '@/modules/identity/permissions';
 import { labelFor } from '@/lib/presentation';
+import { AssistantDock } from '@/components/assistant-dock';
 
 type NavigationItem = [href: string, label: string, icon: LucideIcon];
 
@@ -52,6 +54,7 @@ const supplierNavigation: NavigationItem[] = [
   ['/mensagens', 'Mensagens', MessageSquare],
   ['/equipe', 'Equipe', Users],
   ['/assinatura', 'Assinatura', CreditCard],
+  ['/assistente', 'Assistente Flubox', Sparkles],
 ];
 
 const resellerNavigation: NavigationItem[] = [
@@ -67,6 +70,7 @@ const resellerNavigation: NavigationItem[] = [
   ['/financeiro', 'Créditos e pagamentos', CircleDollarSign],
   ['/casos', 'Pós-venda', CircleHelp],
   ['/mensagens', 'Mensagens', MessageSquare],
+  ['/assistente', 'Assistente Flubox', Sparkles],
 ];
 
 const adminNavigation: NavigationItem[] = [
@@ -81,6 +85,8 @@ const adminNavigation: NavigationItem[] = [
   ['/admin/relatorios', 'Relatórios', BarChart3],
   ['/admin/auditoria', 'Auditoria', FileText],
   ['/admin/integracoes', 'Integrações', PlugZap],
+  ['/admin/assistente', 'Gestão da IA', Sparkles],
+  ['/assistente', 'Assistente Flubox', Sparkles],
 ];
 
 export async function AppShell({
@@ -123,6 +129,7 @@ export async function AppShell({
         '/mensagens': 'orders.view',
         '/equipe': 'organization.manage',
         '/assinatura': 'organization.manage',
+        '/assistente': 'assistant.use',
       };
       navigation = supplierNavigation.filter(([href]) => {
         const permission = pathPermission[href];
@@ -264,6 +271,15 @@ export async function AppShell({
           </div>
         </header>
         <div className="app-content app-route-stage">{children}</div>
+        <AssistantDock
+          userName={account.user.name ?? account.user.email}
+          organizationType={account.organization.type}
+          configured={
+            process.env.ASSISTANT_ENABLED === 'true' &&
+            Boolean(process.env.CLOUDFLARE_ACCOUNT_ID) &&
+            Boolean(process.env.CLOUDFLARE_AI_API_TOKEN)
+          }
+        />
       </main>
     </div>
   );

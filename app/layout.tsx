@@ -34,6 +34,7 @@ export default async function RootLayout({
     '/relatorios',
     '/configuracoes',
     '/integracoes',
+    '/assistente',
   ];
   const pageOwnsShell =
     [
@@ -42,6 +43,7 @@ export default async function RootLayout({
       '/relatorios',
       '/configuracoes',
       '/casos',
+      '/assistente',
     ].includes(pathname) || /^\/produtos\/[^/]+$/.test(pathname);
   let content = children;
   if (
